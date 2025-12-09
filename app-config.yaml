@@ -1,0 +1,55 @@
+bottom-tab-view-simulation:
+    eitri-apps:
+        - slug: 'shopping-wake-template-home'
+          title: 'Inicio'
+          initialization-params:
+              type: 'string'
+              value: 'tabIndex=0'
+        - slug: 'shopping-wake-template-home'
+          title: 'Categorias'
+          initialization-params:
+              type: 'string'
+              value: 'tabIndex=1&route=Categories'
+        - slug: 'shopping-wake-template-cart'
+          title: 'Carrinho'
+          initialization-params:
+              type: 'string'
+              value: 'tabIndex=2'
+        - slug: 'shopping-wake-template-account'
+          title: 'Perfil'
+          initialization-params:
+              type: 'string'
+              value: 'tabIndex=3'
+eitri-apps:
+    - path: ./shopping-wake-template-shared
+      workspace: shopping-wake-template-shared
+      alias: shared
+      focus: false
+      shared: true
+    - path: ./shopping-wake-template-home
+      workspace: shopping-wake-template-home
+      alias: home
+      focus: true
+      shared: false
+    - path: ./shopping-wake-template-pdp
+      workspace: shopping-wake-template-pdp
+      alias: pdp
+      focus: false
+      shared: false
+    - path: ./shopping-wake-template-cart
+      workspace: shopping-wake-template-cart
+      alias: cart
+      focus: false
+      shared: false
+    - path: ./shopping-wake-template-checkout
+      workspace: shopping-wake-template-checkout
+      alias: checkout
+      focus: false
+      shared: false
+    - path: ./shopping-wake-template-account
+      workspace: shopping-wake-template-account
+      alias: account
+      focus: false
+      shared: false
+application-id: c0f7b6e6-39ae-415b-babb-5906bbc66085
+check-js: false

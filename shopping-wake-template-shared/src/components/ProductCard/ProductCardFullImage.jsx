@@ -1,0 +1,108 @@
+import WishlistIcon from './components/WishlistIcon'
+import Loading from '../Loading/LoadingComponent'
+import { Text, View, Image } from 'eitri-luminus'
+import Rating from './components/Rating'
+
+export default function ProductCardFullImage(props) {
+	const {
+		listPrice,
+		image,
+		name,
+		price,
+		installments,
+		loadingCartOp,
+		isOnWishlist,
+		showListItem,
+		actionLabel,
+		onPressOnCard,
+		onPressCartButton,
+		onPressOnWishlist,
+		rating,
+		available,
+		className
+	} = props
+
+	const _onPressOnWishlist = e => {
+		e.stopPropagation()
+		onPressOnWishlist()
+	}
+
+	return (
+		<View
+			onClick={onPressOnCard}
+			className={`relative bg-white rounded ${className}`}>
+			<View className={`flex flex-col w-full shadow-md rounded`}>
+				<View
+					className={`relative flex flex-col w-full justify-center items-center rounded-lg h-[240px] w-full min-h-[240px] max-h-[240px]`}>
+					<Image
+						className={`object-contain h-full w-full rounded`}
+						src={image}
+					/>
+
+					<View
+						onClick={_onPressOnWishlist}
+						className='absolute top-[8px] right-[5px] flex items-center justify-center rounded-full backdrop-blur-sm bg-gray/70 z-[99] p-2'>
+						<WishlistIcon
+							filled={isOnWishlist}
+							className='text-header-background'
+						/>
+					</View>
+				</View>
+
+				<View className={`w-full p-2`}>
+					<View className='mt-2 w-full flex justify-between gap-4 h-[40px]'>
+						<Text className='line-clamp-2 font-medium text-sm break-words'>{name}</Text>
+					</View>
+
+					<View className='w-full flex justify-between items-center h-[24px]'>
+						{rating && (
+							<Rating
+								ratingValue={rating.rating}
+								ratingsCount={rating.count}
+							/>
+						)}
+					</View>
+
+					<View className='flex flex-col gap-1 mt-1'>
+						{showListItem && (
+							<>
+								{listPrice ? (
+									<Text className='line-through font-bold text-neutral-500 text-xs'>{listPrice}</Text>
+								) : (
+									<View className='h-[16px]' />
+								)}
+							</>
+						)}
+
+						<View className='flex flex-col'>
+							<Text className='font-bold text-primary text'>{price}</Text>
+							<Text className='text-xs'>à vista no Pix</Text>
+						</View>
+
+						{installments ? (
+							<Text className='font-bold text-neutral-500 text-xs'>{installments}</Text>
+						) : (
+							<View className='h-[32px]' />
+						)}
+					</View>
+				</View>
+
+				<View
+					onClick={e => {
+						e.stopPropagation()
+						onPressCartButton()
+					}}
+					className={`mt-1 h-[36px]  w-full rounded-b flex justify-center items-center ${available === false ? 'bg-gray-300' : 'bg-primary border border-primary-700 border-[0.5px] bg-primary-700'}  z-[99]`}>
+					{loadingCartOp ? (
+						<Loading width='36px' />
+					) : (
+						<Text
+							className={`${available === false ? 'text-gray-500' : 'text-primary-content'} font-medium text-xs`}>
+							{actionLabel}
+						</Text>
+					)}
+				</View>
+			</View>
+		</View>
+	)
+}

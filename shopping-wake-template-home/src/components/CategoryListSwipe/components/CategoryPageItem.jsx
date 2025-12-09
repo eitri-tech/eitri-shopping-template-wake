@@ -1,0 +1,70 @@
+import { HeaderReturn, HeaderContentWrapper, HeaderText } from 'shopping-wake-template-shared'
+import Eitri from 'eitri-bifrost'
+import CategoryTitle from './CategoryTitle'
+
+export default function CategoryPageItem(props) {
+	const { item, goToItem } = props
+
+	const [showSubItems, setShowSubItems] = useState(false)
+
+	useEffect(() => {
+		if (showSubItems) {
+			Eitri.navigation.addBackHandler(() => {
+				setShowSubItems(false)
+				return false
+			})
+		} else {
+			Eitri.navigation.clearBackHandlers()
+		}
+	}, [showSubItems])
+
+	const handleItemPress = item => {
+		if (item.submenus && item.submenus.length > 0) {
+			setShowSubItems(true)
+		} else {
+			goToItem(item)
+		}
+	}
+
+	return (
+		<>
+			<CategoryTitle
+				icon={item.icon}
+				title={item.name}
+				hasSubItems={item.submenus && item.submenus.length > 0}
+				onClick={() => handleItemPress(item)}
+			/>
+			<View
+				className={`flex flex-col min-h-screen h-screen w-screen fixed ${showSubItems ? 'left-0 ' : 'left-[100vw]'} top-0 transition-left duration-300 z-[9999]`}>
+				<HeaderContentWrapper
+					containerClassName={`${showSubItems ? 'left-0' : '!left-[100vw] !shadow-none'} transition-left !duration-300 !backdrop-blur-none !bg-white`}>
+					<HeaderReturn onClick={() => setShowSubItems(false)} />
+					<HeaderText text={item.name}>{item.name}</HeaderText>
+				</HeaderContentWrapper>
+				<View
+					bottomInset={'auto'}
+					className='bg-base-100 flex-1 overflow-y-auto'>
+					<View className='flex flex-col p-4 gap-4'>
+						{item?.action && (
+							<CategoryTitle
+								icon={item.icon}
+								hasSubItems={false}
+								title={`Ver tudo em ${item.name}`}
+								onClick={() => goToItem(item)}
+							/>
+						)}
+						{item?.submenus?.map((subItem, index) => (
+							<CategoryTitle
+								key={subItem.name}
+								icon={subItem.icon}
+								hasSubItems={false}
+								title={subItem.name}
+								onClick={() => handleItemPress(subItem)}
+							/>
+						))}
+					</View>
+				</View>
+			</View>
+		</>
+	)
+}

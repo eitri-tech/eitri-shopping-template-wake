@@ -1,0 +1,49 @@
+name: Verificar e Publicar Versões
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - homolog
+
+jobs:
+  build:
+    name: Verificar e Publicar Versões
+    runs-on: ubuntu-latest
+
+    services:
+      docker:
+        image: docker:20.10.7
+        options: --privileged
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Validar e Publicar Versões do Eitri App
+        env:
+          EITRI_CLI_CLIENT_ID: ${{ secrets.EITRI_CLI_CLIENT_ID }}
+          EITRI_CLI_CLIENT_SECRET: ${{ secrets.EITRI_CLI_CLIENT_SECRET }}
+        run: |
+          echo "Executando script..."
+          npm install -g eitri-cli
+          node check_and_push.js
+
+      # - name: Configurar credenciais AWS
+      #   uses: aws-actions/configure-aws-credentials@v4
+      #   with:
+      #     aws-access-key-id: ${{ secrets.S3_VTEX_CMS_JSON_ID }}
+      #     aws-secret-access-key: ${{ secrets.S3_VTEX_CMS_JSON_KEY }}
+      #     aws-region: us-east-1
+
+      # - name: Enviar arquivos _cms para S3
+      #   env:
+      #     S3_VTEX_CMS_JSON_PATH: ${{ vars.S3_VTEX_CMS_JSON_PATH }}
+      #   run: |
+      #     aws s3 sync _cms s3://$S3_VTEX_CMS_JSON_PATH --delete
