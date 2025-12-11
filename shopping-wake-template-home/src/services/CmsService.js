@@ -10,6 +10,23 @@ import { logError } from './TrackingService'
 let responseHotsite = {}
 
 export const getCmsHome = async () => {
+	const config = await Eitri.environment.getRemoteConfigs()
+	const account = config.providerInfo.account
+	const cacheKey = `${account}CmsHome`
+
+	const cachedPage = await loadPageFromCache(cacheKey)
+
+	if (cachedPage) {
+		loadHomeCmsContent().then(result => savePageInCache(cacheKey, result)).catch(e => console.error('Error saving page to cache:', e))
+		return cachedPage
+	}
+
+	const page = await loadHomeCmsContent()
+	savePageInCache(cacheKey, page)
+	return page
+}
+
+const loadHomeCmsContent = async () => {
 	const configHome = await getConfigHome()
 	// console.log('configHome >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', configHome)
 
@@ -24,55 +41,54 @@ export const getCmsHome = async () => {
 	return null
 }
 
-const getConfigHome = async () => {
-	const config = await Eitri.environment.getRemoteConfigs()
+const loadPageFromCache = async cacheKey => {
+	try {
 
+		const CACHE_EXPIRATION_MS = 86400000 // 24 horas
+
+		const content = await Eitri.sharedStorage.getItemJson(cacheKey)
+		if (!content) return
+
+		const inputDate = new Date(content.cachedIn)
+		const currentDate = new Date()
+		const differenceInMs = currentDate - inputDate
+		if (differenceInMs > CACHE_EXPIRATION_MS) {
+			return null
+		}
+		return content?.data
+	} catch (error) {
+		console.error('Error trying load from cache', error)
+		return null
+	}
+}
+
+export const savePageInCache = async (cacheKey, page) => {
+	try {
+		await Eitri.sharedStorage.setItemJson(cacheKey, {
+			data: page,
+			cachedIn: new Date().toISOString()
+		})
+	} catch (error) {
+		console.error('Error saving page to cache:', error)
+	}
+}
+
+const getConfigHome = async () => {
 	// Pegar primeiro config do Eitri-content
 	try {
-		// // cache
-		// const cacheExpiresAt = await getStorageItem(STGE_ITEM.CMS_CONFIG_HOME_EXPIRES_AT)
-		// const dateNow = new Date().toISOString()
-		// if (dateNow < cacheExpiresAt) {
-		// 	const cmsConfigCache = await getStorageJSON(STGE_ITEM.CMS_CONFIG_HOME)
-		// 	if (cmsConfigCache) {
-		// 		resolveCmsConfigHome()
-		// 		console.log('cmsHomeCache >> cache >>>>>>', JSON.stringify(cmsConfigCache))
-		// 		return cmsConfigCache
-		// 	}
-		// }
-
-		const eitriContent = await resolveCmsConfigHome()
-		// console.log('eitriContent >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', eitriContent)
-		if (eitriContent) {
-			return eitriContent
-		}
+		return await resolveCmsConfigHome()
 	} catch (e) {
-		logError('getConfigHome', e)
 		console.error('getConfigHome', e)
 	}
 
 	// Fallback, config do projeto
-	// return storeConfig[Wake.account]
+	const config = await Eitri.environment.getRemoteConfigs()
 	return storeConfig[config.providerInfo.account]
 }
 
 const resolveCmsConfigHome = async () => {
 	const eitriContentHome = await getConfigByEitriContent('home')
-	if (eitriContentHome) {
-		// data de expiração do cache
-		const cacheExpiration = new Date()
-		cacheExpiration.setMinutes(cacheExpiration.getMinutes() + 10) // Adiciona 10 minutos
-		await setStorageItem(STGE_ITEM.CMS_CONFIG_HOME_EXPIRES_AT, cacheExpiration.toISOString()).catch(e =>
-			console.error('SaveCmsHomeStorage expiresAt', e)
-		)
-		// console.log('cacheExpiration.toISOString() >>>>>>>>', cacheExpiration.toISOString())
-
-		// conteudo do cms
-		await setStorageJSON(STGE_ITEM.CMS_CONFIG_HOME, eitriContentHome).catch(e =>
-			console.error('SaveCmsHomeStorage', e)
-		)
-		return eitriContentHome
-	}
+	return eitriContentHome
 }
 
 const getContentByConfig = async configPage => {
@@ -158,26 +174,15 @@ const handleContentByHotsite = async (result, config) => {
 
 const getConfigByEitriContent = async contentType => {
 	const eitriConfig = await Eitri.environment.getRemoteConfigs()
-	// const url = `https://implantacao-content.eitri.tech/api/wake-cms-pages`
-	// const url = eitriConfig.wakeCmsUrl
-	// const result = await Eitri.http.get(url)
-	// eitriConfig.eitriContentCmsUrl = 'http://implantacao.localhost:8080/api/wake-cms-pages/?where[type][equals]=balaroti'
+	// eitriConfig.eitriContentCmsUrl = 'http://implantacao.localhost:8080/api/wake-cms-pages/?where[type][equals]=<account>'
 
 	let result
 	if (eitriConfig?.providerInfo?.eitriContentCmsUrl) {
-		let url
 		try {
-			const _contentType =
-				contentType === 'home'
-					? eitriConfig.providerInfo.faststore || eitriConfig.providerInfo.account
-					: contentType
-			// url = `${eitriConfig.providerInfo.eitriContentCmsUrl}?where[type][equals]=${_contentType}`
-			url = `${eitriConfig.providerInfo.eitriContentCmsUrl}`
-			result = await Eitri.http.get(url)
-			contentType = _contentType
+			contentType = contentType === 'home' ? eitriConfig.providerInfo.faststore || eitriConfig.providerInfo.account : contentType
+			result = await Eitri.http.get(eitriConfig?.providerInfo?.eitriContentCmsUrl)
 		} catch (e) {
-			// logError('getConfigByEitriContent wakeCmsUrl:', e)
-			console.error('getConfigByEitriContent eitriContentCmsUrl', url, e)
+			console.error('getConfigByEitriContent eitriContentCmsUrl', eitriConfig?.providerInfo?.eitriContentCmsUrl, e)
 		}
 	}
 
