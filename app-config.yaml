@@ -51,5 +51,6 @@ eitri-apps:
       alias: account
       focus: false
       shared: false
+# App: 'EITRI-SHOP-TEMPLATE-WAKE'
 application-id: a8576e3a-2f34-4257-8843-b96d1038e37b
 check-js: false
