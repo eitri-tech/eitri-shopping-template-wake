@@ -6,7 +6,7 @@
     "host": "www.dlkmodas.com.br",
     "domain": "www.dlkmodas.com.br",
     "tcs_account": "tcs_dlkmo_589f57e6b71c46bd9239f353079848ca",
-    "eitriContentCmsUrl": "http://implantacao.localhost:8080/api/wake-cms-pages/?where[type][equals]=balaroti"
+    "eitriContentCmsUrl": "https://implantacao-content.eitri.tech/api/wake-cms-pages?where[type][equals]=balaroti"
   },
   "appConfigs": {
     "autoTriggerGAEvents": true,
