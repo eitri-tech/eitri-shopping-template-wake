@@ -1,77 +1,77 @@
 {
-  "ecommerceProvider": "WAKE",
+  "ecommerceProvider": "VTEX",
   "providerInfo": {
-    "account": "dlkmodas",
-    "faststore": "dlkmodas",
-    "host": "www.dlkmodas.com.br",
-    "domain": "www.dlkmodas.com.br",
-    "tcs_account": "tcs_dlkmo_589f57e6b71c46bd9239f353079848ca",
+    "account": "balaroti",
+    "host": "https://www.balaroti.com.br",
     "eitriContentCmsUrl": "https://implantacao-content.eitri.tech/api/wake-cms-pages?where[type][equals]=balaroti"
   },
   "appConfigs": {
-    "autoTriggerGAEvents": true,
-    "clarityId": "",
-    "headerBackgroundColor": "accent-300",
-    "headerContentColor": "primary-100",
-    "headerLogo": "https://framerusercontent.com/images/srQA8vHpVggDBFZ60DgGnWDxuT0.svg",
-    "headerScrollEffect": true,
+    "useScrollEffect": true,
+    "showSearchBar": false,
+    "statusBarTextColor": "dark",
+    "headerContentColor": "neutral-900",
+    "headerBackgroundColor": "background-color",
+    "headerName": "Balaroti",
+    "headerLogo": "https://forge-assets.eitri.tech/store_icons/YjgxYTEzNWQtYWFkNC00NzAyLWJiM2YtOWNjNmE1OTJhNTFi.png",
     "productCard": {
-      "buyGoesToPDP": true,
-      "showListPrice": true,
-      "style": "fullImage"
-    },
-    "statusBarTextColor": "black"
-  },
-  "eitriConfig": {
-    "bottomNavItems": [
-      {
-        "initParams": {
-          "tabIndex": 0
-        },
-        "slug": "eitri-shopping-wake-home"
-      },
-      {
-        "initParams": {
-          "tabIndex": 1,
-          "action": "Favorites"
-        },
-        "slug": "eitri-shopping-wake-account"
-      },
-      {
-        "initParams": {
-          "route": "Categories",
-          "tabIndex": 2
-        },
-        "slug": "eitri-shopping-wake-home"
-      },
-      {
-        "initParams": {
-          "tabIndex": 3
-        },
-        "slug": "eitri-shopping-wake-account"
-      },
-      {
-        "initParams": {
-          "tabIndex": 4
-        },
-        "slug": "eitri-shopping-wake-cart"
-      }
-    ],
-    "mainApp": "eitri-shopping-wake-home"
-  },
-  "searchOptions": {
-    "legacySearch": false
-  },
-  "storePreferences": {
-    "currencyCode": "BRL",
-    "displayCompanyName": "WAKE",
-    "locale": "pt-BR",
-    "marketingTag": "eitri-shop",
-    "segments": {
-      "utm_medium": "eitri-shop"
+      "style": "fullImage",
+      "showListPrice": false,
+      "buyGoesToPDP": false
     }
   },
-  "deeplinkResolver": {
-    "slug": "eitri-shopping-addons-deeplink-resolver-wake"
+  "eitriConfig": {
+    "mainApp": "eitri-forge-ecom-home",
+    "renderFakeBottomBar": false,
+    "bottomNavItems": [
+      {
+        "slug": "eitri-forge-ecom-home",
+        "initParams": {
+          "tabIndex": 0
+        }
+      },
+      {
+        "slug": "eitri-forge-ecom-home",
+        "initParams": {
+          "tabIndex": 1,
+          "route": "Categories"
+        }
+      },
+      {
+        "slug": "eitri-forge-ecom-cart",
+        "initParams": {
+          "tabIndex": 2
+        }
+      },
+      {
+        "slug": "eitri-forge-ecom-home",
+        "initParams": {
+          "tabIndex": 3,
+          "route": "LandingPage",
+          "landingPageName": "natal"
+        }
+      },
+      {
+        "slug": "eitri-forge-ecom-account",
+        "initParams": {
+          "tabIndex": 4
+        }
+      }
+    ]
+  },
+  "storePreferences": {
+    "countryCode": "BRA",
+    "saveUserData": true,
+    "timeZone": "Eastern Standard Time",
+    "currencyCode": "BRL",
+    "currencyLocale": 1046,
+    "currencySymbol": "R$",
+    "currencyFormatInfo": {
+      "currencyDecimalDigits": 2,
+      "currencyDecimalSeparator": ",",
+      "currencyGroupSeparator": ".",
+      "currencyGroupSize": 3,
+      "startsWithCurrencySymbol": true
+    },
+    "locale": "pt-BR"
   }
 }
