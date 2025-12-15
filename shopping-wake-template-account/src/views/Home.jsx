@@ -23,6 +23,7 @@ import iconShipping from '../assets/icons/truck-solid-full.svg'
 import iconSales from '../assets/icons/sales-solid-full.svg'
 import iconInterrogation from '../assets/icons/interrogation-solid-full.svg'
 
+let helpCountdown = 8
 export default function Home(props) {
 	const PAGE = 'Minha conta'
 	const [isLoading, setIsLoading] = useState(true)
@@ -154,6 +155,15 @@ export default function Home(props) {
 		Eitri.openBrowser({ url })
 	}
 
+	const handlerHelp = () => {
+		if (helpCountdown === 0) {
+			Eitri.navigation.navigate({ path: 'Debug' })
+			helpCountdown = 8
+		} else {
+			helpCountdown--
+		}
+	}
+
 	return (
 		<Page title={PAGE}>
 			<Header showBackButton={showBackButton} />
@@ -245,7 +255,9 @@ export default function Home(props) {
 					)}
 
 					<View className='flex flex-col gap-2'>
-						<Text className='font-medium uppercase'>Ajuda</Text>
+						<View onClick={handlerHelp}>
+							<Text className='font-medium uppercase'>Ajuda</Text>
+						</View>
 
 						<ProfileCardButton
 							icon={iconShipping}
