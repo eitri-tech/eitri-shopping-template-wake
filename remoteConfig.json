@@ -1,10 +1,11 @@
 {
-  "ecommerceProvider": "VTEX",
+  "ecommerceProvider": "WAKE",
   "providerInfo": {
     "account": "balaroti",
     "host": "https://www.balaroti.com.br",
     "eitriContentCmsUrl": "https://implantacao-content.eitri.tech/api/wake-cms-pages?where[type][equals]=balaroti",
-    "tcs_account": "tcs_balar_4e61440fe3d84744be0d8e52b74689b3"
+    "tcs_account": "tcs_balar_4e61440fe3d84744be0d8e52b74689b3",
+    "partnerByRegion": true
   },
   "appConfigs": {
     "useScrollEffect": true,
