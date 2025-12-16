@@ -94,6 +94,12 @@ const resolveCmsConfigHome = async () => {
 const getContentByConfig = async configPage => {
 	let contentResult = []
 
+	// Validate that configPage is iterable
+	if (!configPage || !Array.isArray(configPage)) {
+		console.warn('configPage is not a valid array:', configPage)
+		return contentResult
+	}
+
 	for (const config of configPage) {
 		// console.log('getContentByConfig >> config >>>>>>>>>>>>>', config)
 		try {
