@@ -1,7 +1,7 @@
 import Eitri from 'eitri-bifrost'
 import { CustomButton } from 'shopping-wake-template-shared'
 import { logScreenView } from '../services/TrackingService'
-import alertTriangleIcon from '../assets/images/alert-triangle.svg'
+import { FaExclamationTriangle } from "react-icons/fa";
 
 export default function Error(props) {
 	const PAGE = 'Página de Erro'
@@ -23,12 +23,6 @@ export default function Error(props) {
 			<View
 				className='flex flex-col items-center justify-center w-full gap-8'
 				height='100vh'>
-				<Image
-					src={alertTriangleIcon}
-					width={70}
-					height={70}
-					className='text-secondary-900'
-				/>
 
 				<Text className='font-bold text-center'>PÁGINA NÃO ENCONTRADA</Text>
 

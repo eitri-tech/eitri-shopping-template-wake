@@ -1,4 +1,5 @@
 import { getCart, addItemToCart, removeCartItem, generateNewCart } from '../services/CartService'
+import { verifyFlowByRegion } from '../services/PartnerService'
 
 const LocalCart = createContext({})
 
@@ -30,6 +31,14 @@ export default function CartProvider({ children }) {
 		return executeCartOperation(generateNewCart)
 	}
 
+	const verifyRegion = async () => {
+		try {
+			await verifyFlowByRegion()
+		} catch (e) {
+			console.error('startConfigure', e)
+		}
+	}
+
 	return (
 		<LocalCart.Provider
 			value={{
@@ -39,7 +48,8 @@ export default function CartProvider({ children }) {
 				cartIsLoading,
 				addItem,
 				removeItem,
-				createNewCart
+				createNewCart,
+				verifyRegion
 			}}>
 			{children}
 		</LocalCart.Provider>

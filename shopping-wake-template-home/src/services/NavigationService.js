@@ -172,3 +172,11 @@ const uniqueRequestLogin = () => {
 	})
 	return promiseRequestLogin
 }
+
+export const openZipCodeVerification = async () => {
+	try {
+		Eitri.navigation.navigate({ path: 'ZipCodeVerification', replace: false })
+	} catch (e) {
+		console.error('navigate to ZipCodeVerification: Error', e)
+	}
+}

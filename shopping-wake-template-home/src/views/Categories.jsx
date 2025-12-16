@@ -28,6 +28,8 @@ export default function Categories(props) {
 	}, [])
 
 	const init = async () => {
+		await verifyRegion()
+		
 		getAllCategories()
 
 		const startParams = await Eitri.getInitializationInfos()
