@@ -66,7 +66,6 @@ export default function Home() {
 		if (product) {
 			refreshProductAttributes()
 		}
-		console.log('product', product)
 	}, [selectedVariation])
 
 	const refreshProductAttributes = async () => {
