@@ -1,21 +1,21 @@
 bottom-tab-view-simulation:
     eitri-apps:
-        - slug: 'shopping-wake-template-home'
+        - slug: 'home'
           title: 'Inicio'
           initialization-params:
               type: 'string'
               value: 'tabIndex=0'
-        - slug: 'shopping-wake-template-home'
+        - slug: 'home'
           title: 'Categorias'
           initialization-params:
               type: 'string'
               value: 'tabIndex=1&route=Categories'
-        - slug: 'shopping-wake-template-cart'
+        - slug: 'cart'
           title: 'Carrinho'
           initialization-params:
               type: 'string'
               value: 'tabIndex=2'
-        - slug: 'shopping-wake-template-account'
+        - slug: 'account'
           title: 'Perfil'
           initialization-params:
               type: 'string'
