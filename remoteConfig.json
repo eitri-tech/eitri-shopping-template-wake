@@ -22,38 +22,30 @@
     }
   },
   "eitriConfig": {
-    "mainApp": "eitri-forge-ecom-home",
+    "mainApp": "home",
     "renderFakeBottomBar": false,
     "bottomNavItems": [
       {
-        "slug": "eitri-forge-ecom-home",
+        "slug": "home",
         "initParams": {
           "tabIndex": 0
         }
       },
       {
-        "slug": "eitri-forge-ecom-home",
+        "slug": "home",
         "initParams": {
           "tabIndex": 1,
           "route": "Categories"
         }
       },
       {
-        "slug": "eitri-forge-ecom-cart",
+        "slug": "cart",
         "initParams": {
           "tabIndex": 2
         }
       },
       {
-        "slug": "eitri-forge-ecom-home",
-        "initParams": {
-          "tabIndex": 3,
-          "route": "LandingPage",
-          "landingPageName": "natal"
-        }
-      },
-      {
-        "slug": "eitri-forge-ecom-account",
+        "slug": "account",
         "initParams": {
           "tabIndex": 4
         }
