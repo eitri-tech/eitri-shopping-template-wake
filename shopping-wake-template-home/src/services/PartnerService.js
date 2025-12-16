@@ -1,6 +1,5 @@
 import Eitri from 'eitri-bifrost'
 import { Wake } from 'eitri-shopping-wake-shared'
-import { getStorageJSON, setStorageItem } from './StorageService'
 import { openZipCodeVerification } from './NavigationService'
 
 let configPartner
