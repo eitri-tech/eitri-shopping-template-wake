@@ -1,6 +1,6 @@
 import Eitri from 'eitri-bifrost'
 import { Wake } from 'eitri-shopping-wake-shared'
-import { getStorageJSON } from './StorageService'
+import { getStorageJSON, setStorageItem } from './StorageService'
 import { openZipCodeVerification } from './NavigationService'
 
 let configPartner
@@ -16,7 +16,7 @@ export const startFlowByRegion = async (zipCode) => {
 	}
 
 	await Wake.store.setGlobalZipCode(zipCode)
-	await Wake.store.setPartnerAccessToken(partnerData.partnerAccessToken)
+	await Wake.store.setGlobalPartnerAccessToken(partnerData.partnerAccessToken)
 	return true
 }
 
