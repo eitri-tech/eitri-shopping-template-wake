@@ -193,9 +193,10 @@ const getConfigByEitriContent = async contentType => {
 	const document = result?.data?.docs || result?.docs
 
 	if (document?.length > 0) {
-		const content = document.find(f => f.type.toLowerCase() === contentType.toLowerCase())
-		if (content?.sections) {
-			return parseEitriContentToWakeContent(content.sections)
+		const content = document.find(f => f.type.toLowerCase() === contentType.toLowerCase() || f.type.toLowerCase() === `home${contentType.toLowerCase()}`)
+		const sections = content?.sections || document?.sections
+		if (sections) {
+			return parseEitriContentToWakeContent(sections)
 		}
 	}
 

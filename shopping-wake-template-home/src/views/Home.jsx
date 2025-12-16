@@ -15,7 +15,7 @@ let history = {}
 export default function Home() {
 	const PAGE = 'Home'
 
-	const { cart, startCart, createNewCart } = useLocalShoppingCart()
+	const { cart, startCart, createNewCart, verifyRegion } = useLocalShoppingCart()
 
 	const [appIsReady, setAppIsReady] = useState(false)
 	const [cmsContent, setCmsContent] = useState(null)
@@ -57,6 +57,8 @@ export default function Home() {
 			console.error('Error startCart: ', e)
 			forceCreateNewCart()
 		})
+
+		await verifyRegion()
 
 		await resolveContent()
 		await initFavorites()
