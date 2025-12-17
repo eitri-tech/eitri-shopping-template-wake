@@ -24,7 +24,17 @@ export default function PaymentOptions(props) {
 	}, [])
 
 	const getPaymentOptionComponent = option => {
-		const Implementation = paymentsMap[option.paymentMethod]
+		let paymentMethod = option.paymentMethod
+		if (!paymentsMap[paymentMethod]) {
+			if (option?.name?.toLowerCase().includes('cartão') || option?.name?.toLowerCase().includes('card')) {
+				paymentMethod = PAYMENT_METHODS.CREDIT_CARD
+			} else if (option?.name?.toLowerCase().includes('pix')) {
+				paymentMethod = PAYMENT_METHODS.INSTANT_PAYMENT
+			} else if (option?.name?.toLowerCase().includes('boleto')) {
+				paymentMethod = PAYMENT_METHODS.BILLING
+			}
+		}
+		const Implementation = paymentsMap[paymentMethod]
 		if (!Implementation) return null
 		return React.createElement(Implementation, {
 			key: option.paymentMethodId,
