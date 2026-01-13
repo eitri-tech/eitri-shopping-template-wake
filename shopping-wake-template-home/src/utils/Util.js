@@ -1,5 +1,5 @@
 import Eitri from 'eitri-bifrost'
-import { LIST_ORDERING, PRODUCT_SORT_TYPE, SORT_DIRECTION } from './Constants'
+import { CMS_PRODUCT_SORT, LIST_ORDERING, PRODUCT_SORT_TYPE, SORT_DIRECTION } from './Constants'
 
 export const delay = async ms => {
 	return new Promise((resolve, _reject) => setTimeout(resolve, ms))
@@ -235,6 +235,16 @@ export const getDefaultSort = (
 	const direction = params?.sortDirection || defaultSortDirection
 
 	const sort = LIST_ORDERING.values.find(item => item.sortType === sortType && item.direction === direction)
+	if (sort) {
+		return sort
+	}
+	return LIST_ORDERING.values[0]
+}
+
+export const getCmsProductSort = cmsSort => {
+	if (!cmsSort || !CMS_PRODUCT_SORT[cmsSort]) return null
+
+	const sort = LIST_ORDERING.values.find(item => item.id === CMS_PRODUCT_SORT[cmsSort])
 	if (sort) {
 		return sort
 	}

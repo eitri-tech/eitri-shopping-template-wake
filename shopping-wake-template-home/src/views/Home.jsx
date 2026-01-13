@@ -17,9 +17,8 @@ export default function Home() {
 
 	const { cart, startCart, createNewCart, verifyRegion } = useLocalShoppingCart()
 
-	const [appIsReady, setAppIsReady] = useState(false)
 	const [cmsContent, setCmsContent] = useState(null)
-	const [keyProduct, setKeyProduct] = useState(new Date().getTime())
+	// const [keyProduct, setKeyProduct] = useState(new Date().getTime())
 
 	useEffect(() => {
 		window.scroll(0, history.scrollTop || 0)
@@ -29,12 +28,7 @@ export default function Home() {
 		Eitri.navigation.setOnResumeListener(() => {
 			logScreenView(PAGE, 'Home')
 			refreshProductComponents()
-			try {
-				startCart()
-			} catch (e) {
-				console.error('Error startCart: ', e)
-				forceCreateNewCart()
-			}
+			loadCart()
 		})
 	}, [])
 
@@ -53,15 +47,21 @@ export default function Home() {
 	const startHome = async () => {
 		await startConfigure()
 
-		startCart().catch(e => {
-			console.error('Error startCart: ', e)
-			forceCreateNewCart()
-		})
+		loadCart()
 
 		await verifyRegion()
 
 		await resolveContent()
 		await initFavorites()
+	}
+
+	const loadCart = async () => {
+		try {
+			startCart()
+		} catch (e) {
+			console.error('Error startCart: ', e)
+			forceCreateNewCart()
+		}
 	}
 
 	const forceCreateNewCart = async () => {
@@ -84,8 +84,6 @@ export default function Home() {
 		logScreenView(PAGE, 'Home')
 
 		await loadCms()
-		setAppIsReady(true)
-		logScreenView(PAGE)
 		window.scroll(0, 0)
 	}
 
@@ -98,8 +96,6 @@ export default function Home() {
 			} else if (route.toLowerCase() === 'search') {
 				if (rest.value) {
 					rest.term = rest.value
-				} else {
-					route = 'PreSearch'
 				}
 			} else if (route.toLowerCase() === 'product') {
 				const productId = rest.productId || rest.id || rest.value
@@ -110,19 +106,6 @@ export default function Home() {
 			}
 
 			return { path: route, replace: true, state: { ...rest } }
-		}
-
-		const tabIndex = startParams?.tabIndex
-		if (tabIndex || (typeof tabIndex === 'number' && tabIndex >= 0)) {
-			const parsedTabIndex = parseInt(tabIndex)
-
-			if (parsedTabIndex === 1) {
-				return { replace: true, path: '/PreSearch' }
-			}
-
-			if (parsedTabIndex === 2) {
-				return { replace: true, path: '/Categories' }
-			}
 		}
 	}
 
@@ -164,7 +147,6 @@ export default function Home() {
 
 	const navigateToSearch = term => {
 		Eitri.navigation.navigate({ path: '/Search', state: {}, replace: false })
-		openSearch(term)
 	}
 
 	const navigateToWishList = term => {

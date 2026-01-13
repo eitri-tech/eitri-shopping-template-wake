@@ -56,28 +56,28 @@ export const aggregationInfo = `
   }
 `
 
-export const queryBasicContentByHotsiteId = `query ($hotsiteId: Long!) {
-  hotsite(hotsiteId: $hotsiteId) {
+export const queryBasicContentByHotsiteId = `query ($hotsiteId: Long!, $partnerAccessToken: String, $first: Int, $after: String, $sortKey: ProductSortKeys!, $sortDirection: SortDirection!, $filter: [ProductFilterInput]) {
+  hotsite(hotsiteId: $hotsiteId, partnerAccessToken: $partnerAccessToken) {
     ${hotsiteInfo}
     ${bannerInfo}
     ${contentInfo}
-    ${productInfo}
+    ${productInfoWithParams}
     ${seoInfo}
   }
 }`
 
-export const queryBasicContentByHotsiteUrl = `query ($url: String) {
-  hotsite(url: $url) {
+export const queryBasicContentByHotsiteUrl = `query ($url: String, $partnerAccessToken: String, $first: Int, $after: String, $sortKey: ProductSortKeys!, $sortDirection: SortDirection!, $filter: [ProductFilterInput]) {
+  hotsite(url: $url, partnerAccessToken: $partnerAccessToken) {
     ${hotsiteInfo}
     ${bannerInfo}
     ${contentInfo}
-    ${productInfo}
+    ${productInfoWithParams}
     ${seoInfo}
   }
 }`
 
-export const queryAllContentHotsiteByUrl = `query ($url: String, $first: Int, $after: String, $sortKey: ProductSortKeys!, $sortDirection: SortDirection!, $filter: [ProductFilterInput]) {
-  hotsite(url: $url) {
+export const queryAllContentHotsiteByUrl = `query ($url: String, $partnerAccessToken: String, $first: Int, $after: String, $sortKey: ProductSortKeys!, $sortDirection: SortDirection!, $filter: [ProductFilterInput]) {
+  hotsite(url: $url, partnerAccessToken: $partnerAccessToken) {
     ${aggregationInfo}
     ${hotsiteInfo}
     ${bannerInfo}
@@ -87,16 +87,16 @@ export const queryAllContentHotsiteByUrl = `query ($url: String, $first: Int, $a
   }
 }`
 
-export const queryBannersAndProductsByHotsite = `query ($url: String, $first: Int, $after: String, $sortKey: ProductSortKeys!, $sortDirection: SortDirection!) {
-  hotsite(url: $url) {
+export const queryBannersAndProductsByHotsite = `query ($url: String, $partnerAccessToken: String, $first: Int, $after: String, $sortKey: ProductSortKeys!, $sortDirection: SortDirection!) {
+  hotsite(url: $url, partnerAccessToken: $partnerAccessToken) {
     ${aggregationInfo}
     ${bannerInfo}
     ${productInfoWithParams}
   }
 }`
 
-export const queryProductsByHotsite = `query ($url: String, $first: Int, $after: String, $sortKey: ProductSortKeys!, $sortDirection: SortDirection!, $filter: [ProductFilterInput]) {
-  hotsite(url: $url) {
+export const queryProductsByHotsite = `query ($url: String, $partnerAccessToken: String, $first: Int, $after: String, $sortKey: ProductSortKeys!, $sortDirection: SortDirection!, $filter: [ProductFilterInput]) {
+  hotsite(url: $url, partnerAccessToken: $partnerAccessToken) {
     ${aggregationInfo}
     ${productInfoWithParams}
   }
