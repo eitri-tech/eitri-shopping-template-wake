@@ -9,7 +9,12 @@ import { queryProduct, queryProductAttributeSelections } from '../queries/produc
  * @returns {Product} Objeto de produto
  */
 export const getProduct = async (productId, attrSelection = null) => {
-	const result = await Wake.graphQl.query(queryProduct, { productId: parseInt(productId), attrSelection })
+	const partnerAccessToken = (await Wake.store.getPartnerAccessToken()) || null
+	const result = await Wake.graphQl.query(queryProduct, {
+		productId: parseInt(productId),
+		partnerAccessToken,
+		attrSelection
+	})
 	return result.product || null
 }
 
@@ -22,9 +27,11 @@ export const getProduct = async (productId, attrSelection = null) => {
  */
 export const getProductsByAttributes = async (productId, selectedAttributes) => {
 	const { attributeId, value } = selectedAttributes
+	const partnerAccessToken = (await Wake.store.getPartnerAccessToken()) || null
 
 	const result = await Wake.graphQl.query(queryProductAttributeSelections, {
 		productId: parseInt(productId),
+		partnerAccessToken,
 		attributeId: parseInt(attributeId),
 		value: String(value)
 	})
@@ -48,7 +55,11 @@ export const getProductRecommendations = async productId => {
  * @returns {Array} Lista de variações do produto
  */
 export const getProductVariations = async productId => {
-	const result = await Wake.graphQl.query(queryProduct, { productId: parseInt(productId) })
+	const partnerAccessToken = (await Wake.store.getPartnerAccessToken()) || null
+	const result = await Wake.graphQl.query(queryProduct, {
+		productId: parseInt(productId),
+		partnerAccessToken
+	})
 	return result?.product?.attributeSelections?.selections || null
 }
 
@@ -68,8 +79,10 @@ export const getProductByVariations = async (productId, selectedVariations) => {
 			}))
 
 			// Usar a query principal com as seleções de atributos
+			const partnerAccessToken = (await Wake.store.getPartnerAccessToken()) || null
 			const result = await Wake.graphQl.query(queryProduct, {
 				productId: parseInt(productId),
+				partnerAccessToken,
 				attrSelection
 			})
 

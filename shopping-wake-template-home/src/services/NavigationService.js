@@ -145,7 +145,8 @@ export const openPageError = async () => {
 
 export const getUrlType = async url => {
 	const _url = detachUrl(url)
-	const result = await Wake.graphQl.query(queryUri, { url: _url })
+	const partnerAccessToken = (await Wake.store.getPartnerAccessToken()) || null
+	const result = await Wake.graphQl.query(queryUri, { url: _url, partnerAccessToken })
 	return result?.uri || null
 }
 
