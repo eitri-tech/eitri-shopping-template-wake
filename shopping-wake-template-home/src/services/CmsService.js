@@ -6,36 +6,38 @@ import { componentMap } from './ComponentService'
 import { storeConfig } from '../configs/StoreConfig'
 import { setStorageItem, setStorageJSON, STGE_ITEM } from './StorageService'
 import { logError } from './TrackingService'
+import { getCmsProductSort } from '../utils/Util'
 
 let responseHotsite = {}
 
 export const getCmsHome = async () => {
 	const config = await Eitri.environment.getRemoteConfigs()
-	const account = config.providerInfo.account
-	const cacheKey = `${account}CmsHome`
+	const homeKey = config.providerInfo.eitriCmsHomeKey
+	return getCms(homeKey)
+}
 
+export const getCms = async (origin) => {
+	const cacheKey = `${origin}Cms`
 	const cachedPage = await loadPageFromCache(cacheKey)
 
-	if (cachedPage) {
-		loadHomeCmsContent().then(result => savePageInCache(cacheKey, result)).catch(e => console.error('Error saving page to cache:', e))
+	if (cachedPage ) {
+		loadCmsContent(origin).then(result => savePageInCache(cacheKey, result)).catch(e => console.error('Error saving page to cache:', e))
 		return cachedPage
 	}
 
-	const page = await loadHomeCmsContent()
+	const page = await loadCmsContent(origin)
 	savePageInCache(cacheKey, page)
 	return page
 }
 
-const loadHomeCmsContent = async () => {
-	const configHome = await getConfigHome()
-	// console.log('configHome >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', configHome)
+const loadCmsContent = async (origin) => {
+	const configPage = await getConfig(origin)
 
 	try {
 		// pegando informações do conteudo no projeto
-		return await getContentByConfig(configHome)
+		return await getContentByConfig(configPage)
 	} catch (e) {
-		logError('getCmsHome', e)
-		console.error('Error trying get content', e)
+		console.error('loadCmsContent', e)
 	}
 
 	return null
@@ -73,22 +75,17 @@ export const savePageInCache = async (cacheKey, page) => {
 	}
 }
 
-const getConfigHome = async () => {
+const getConfig = async (origin) => {
 	// Pegar primeiro config do Eitri-content
 	try {
-		return await resolveCmsConfigHome()
+		const config = await getConfigByEitriContent(origin)
+		return config
 	} catch (e) {
 		console.error('getConfigHome', e)
 	}
 
 	// Fallback, config do projeto
-	const config = await Eitri.environment.getRemoteConfigs()
-	return storeConfig[config.providerInfo.account]
-}
-
-const resolveCmsConfigHome = async () => {
-	const eitriContentHome = await getConfigByEitriContent('home')
-	return eitriContentHome
+	return storeConfig[origin]
 }
 
 const getContentByConfig = async configPage => {
@@ -106,12 +103,11 @@ const getContentByConfig = async configPage => {
 			if (`${config.selfResolvedImage}` === 'true') {
 				contentResult.push(config)
 			} else if (config.hotsite) {
-				const content = await getContentByHotsiteUrl(config.hotsite, config)
+				const content = await getContentByHotsitePath(config.hotsite, config)
 				if (content?.length > 0) contentResult = [...contentResult, ...content]
 			}
 		} catch (e) {
-			logError('getContentByConfig', e)
-			console.error('Error getWakeContentByConfig', e)
+			console.error('getContentByConfig', e)
 		}
 	}
 
@@ -128,15 +124,26 @@ const filterPosition = (elements, position) => {
 	return newElements
 }
 
-const getContentByHotsiteUrl = async (hotsiteUrl, config) => {
+const getContentByHotsitePath = async (path, config) => {
 	let result
-	if (responseHotsite[hotsiteUrl.toLowerCase()]) {
-		result = responseHotsite[hotsiteUrl.toLowerCase()]
+	const cacheKey = config.id
+
+	if (responseHotsite[cacheKey]) {
+		result = responseHotsite[cacheKey]
 	} else {
-		// console.log('GET api externa >> HOTSITE WAKE >>>>>>', hotsiteUrl.toLowerCase())
-		const url = hotsiteUrl.toLowerCase() === 'home' ? '' : hotsiteUrl
-		result = await getBasicHotsiteData(url)
-		responseHotsite[hotsiteUrl.toLowerCase()] = result
+		const finalPath = path.toLowerCase() === 'home' ? '' : path
+		
+		const sort = getCmsProductSort(config.sort || 'orders_desc')
+		const variables = {
+			first: config.quantity || config.limit ? parseInt(config.quantity || config.limit) : 8,
+			sortKey: sort.sortType,
+			sortDirection: sort.direction,
+			filter: config.filter ? config.filter : null
+		}
+
+		result = await getBasicHotsiteData(finalPath, variables)
+		
+		responseHotsite[cacheKey] = result
 	}
 
 	return handleContentByHotsite(result, config)
@@ -184,22 +191,22 @@ const getConfigByEitriContent = async contentType => {
 
 	let result
 	if (eitriConfig?.providerInfo?.eitriContentCmsUrl) {
+		const cmsUrl = `${eitriConfig.providerInfo.eitriContentCmsUrl}?where[type][equals]=${contentType}`
 		try {
-			contentType = contentType === 'home' ? eitriConfig.providerInfo.faststore || eitriConfig.providerInfo.account : contentType
-			result = await Eitri.http.get(eitriConfig?.providerInfo?.eitriContentCmsUrl)
+			result = await Eitri.http.get(cmsUrl)
 		} catch (e) {
-			console.error('getConfigByEitriContent eitriContentCmsUrl', eitriConfig?.providerInfo?.eitriContentCmsUrl, e)
+			console.error('getConfigByEitriContent', cmsUrl, e)
 		}
 	}
 
 	if (!result?.data?.docs) {
-		result = storeConfig[eitriConfig.providerInfo.account]
+		result = storeConfig[contentType]
 	}
 
 	const document = result?.data?.docs || result?.docs
 
 	if (document?.length > 0) {
-		const content = document.find(f => f.type.toLowerCase() === contentType.toLowerCase() || f.type.toLowerCase() === `home${contentType.toLowerCase()}`)
+		const content = document.find(f => f.type.toLowerCase() === contentType.toLowerCase())
 		const sections = content?.sections || document?.sections
 		if (sections) {
 			return parseEitriContentToWakeContent(sections)

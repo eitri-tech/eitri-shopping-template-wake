@@ -1,3 +1,6 @@
+# App: 'EITRI-SHOP-TEMPLATE-WAKE'
+# DLK: 0647a5dd-5d7b-4ea1-888d-d86e05433f14
+application-id: 0647a5dd-5d7b-4ea1-888d-d86e05433f14
 bottom-tab-view-simulation:
     eitri-apps:
         - slug: 'home'
@@ -51,6 +54,4 @@ eitri-apps:
       alias: account
       focus: false
       shared: false
-# App: 'EITRI-SHOP-TEMPLATE-WAKE'
-application-id: a064629b-5504-425c-b505-79bba4f047e5
 check-js: false
