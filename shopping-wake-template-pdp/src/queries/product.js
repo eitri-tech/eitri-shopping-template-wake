@@ -223,14 +223,14 @@ const allProductParams = `
   ${buyBoxInfo}
   ${similarProductsInfo}`
 
-export const queryProduct = `query ($productId: Long!, $attrSelection: [AttributeFilterInput]) {
-  product(productId: $productId) {
+export const queryProduct = `query ($productId: Long!, $partnerAccessToken: String, $attrSelection: [AttributeFilterInput]) {
+  product(productId: $productId, partnerAccessToken: $partnerAccessToken) {
     ${allProductParams}
   }
 }`
 
-export const queryProductAttributeSelections = `query ($productId: Long!, $attributeId: Long!,  $value: String!) {
-product(productId: $productId) {
+export const queryProductAttributeSelections = `query ($productId: Long!, $partnerAccessToken: String, $attributeId: Long!,  $value: String!) {
+product(productId: $productId, partnerAccessToken: $partnerAccessToken) {
 	attributeSelections(selected: { attributeId: $attributeId, value: $value } ) {
 		selections {
 			name
@@ -246,8 +246,8 @@ product(productId: $productId) {
   }
 }}`
 
-export const queryBestSellerProducts = `query ($first: Int) {
-  products(first: $first, sortDirection: ASC, sortKey: SALES, filters: {mainVariant:true, hasImages: true}) {
+export const queryBestSellerProducts = `query ($partnerAccessToken: String, $first: Int) {
+  products(partnerAccessToken: $partnerAccessToken, first: $first, sortDirection: ASC, sortKey: SALES, filters: {mainVariant:true, hasImages: true}) {
     nodes {
       ${allProductParams}
     }
@@ -255,8 +255,8 @@ export const queryBestSellerProducts = `query ($first: Int) {
   }
 }`
 
-export const queryNewProducts = `query ($first: Int) {
-  products(first: $first, sortDirection: DESC, sortKey: RELEASE_DATE, filters: {mainVariant:true, hasImages: true}) {
+export const queryNewProducts = `query ($partnerAccessToken: String, $first: Int) {
+  products(partnerAccessToken: $partnerAccessToken, first: $first, sortDirection: DESC, sortKey: RELEASE_DATE, filters: {mainVariant:true, hasImages: true}) {
     nodes {
       ${allProductParams}
     }

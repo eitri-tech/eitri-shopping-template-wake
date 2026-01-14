@@ -181,7 +181,7 @@ export default function Home() {
 
 		setLoadingBuyProduct(true)
 		try {
-			const variantId = product?.attributeSelections?.selectedVariant?.productVariantId
+			const variantId = product?.attributeSelections?.selectedVariant?.productVariantId || product?.productVariantId
 			await addItemToCart(parseInt(variantId), 1)
 			setLoadingBuyProduct(false)
 			setShowModalAddToCartConfirmation(true)

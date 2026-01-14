@@ -21,27 +21,32 @@ import {
  * - `aggregations`: Uma lista de strings representando os filtros aplicáveis.
  */
 export const getProductsBySearch = async variables => {
-	const result = await Wake.graphQl.query(querySearchProducts, { ...variables })
+	const partnerAccessToken = (await Wake.store.getPartnerAccessToken()) || null
+	const result = await Wake.graphQl.query(querySearchProducts, { partnerAccessToken, ...variables })
 	return result?.search || null
 }
 
 export const getProductsWithSearchParams = async variables => {
-	const result = await Wake.graphQl.query(queryProductsBySearchParams, { ...variables })
+	const partnerAccessToken = (await Wake.store.getPartnerAccessToken()) || null
+	const result = await Wake.graphQl.query(queryProductsBySearchParams, { partnerAccessToken, ...variables })
 	return result?.products || null
 }
 
 export const getProductVariations = async productId => {
-	const result = await Wake.graphQl.query(queryProductVariations, { productId })
+	const partnerAccessToken = (await Wake.store.getPartnerAccessToken()) || null
+	const result = await Wake.graphQl.query(queryProductVariations, { partnerAccessToken, productId })
 	return result?.product?.attributeSelections?.selections || null
 }
 
 export const getProductByVariations = async (productId, selectedVariations) => {
-	const result = await Wake.graphQl.query(queryProductByVariation, { productId, selectedVariations })
+	const partnerAccessToken = (await Wake.store.getPartnerAccessToken()) || null
+	const result = await Wake.graphQl.query(queryProductByVariation, { partnerAccessToken, productId, selectedVariations })
 	return result?.product?.attributeSelections?.selectedVariant || null
 }
 
 export const getCategories = async (url = '', position = null) => {
-	const result = await Wake.graphQl.query(queryCategories, { url, position })
+	const partnerAccessToken = (await Wake.store.getPartnerAccessToken()) || null
+	const result = await Wake.graphQl.query(queryCategories, { url, position, partnerAccessToken })
 	return result?.menuGroups || null
 }
 

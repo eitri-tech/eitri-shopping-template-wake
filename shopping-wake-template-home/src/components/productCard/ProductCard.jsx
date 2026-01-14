@@ -4,11 +4,11 @@ import { openProduct } from '../../services/NavigationService'
 import noImage from '../../assets/images/no_image.png'
 import { formatCurrency, formatImageUrl } from '../../utils/Util'
 import { getProductByVariations, getProductVariations } from '../../services/ProductService'
-import { addItemToCart } from '../../services/CartService'
 import { useNotification } from '../Notification/NotificationProvider'
 import FavoriteButton from './FavoriteButton'
 import bagIcon from '../../assets/images/bag.svg'
 import addIcon from '../../assets/images/add.svg'
+import { useLocalShoppingCart } from '../../providers/LocalCart'
 
 export default function ProductCard(props) {
 	const {
@@ -21,6 +21,8 @@ export default function ProductCard(props) {
 		openVariationsModal,
 		disableImageScroll
 	} = props
+
+	const { addItem } = useLocalShoppingCart()
 
 	// Função para obter percentual de desconto da API
 	const getDiscountPercentage = () => {
@@ -112,7 +114,7 @@ export default function ProductCard(props) {
 			})
 
 			const _product = await getProductByVariations(product.productId, _selectedVariations)
-			const cart = await addItemToCart(_product.productVariantId, 1)
+			const cart = await addItem(_product.productVariantId, 1)
 			const successful = cart.products.find(p => p.productVariantId === _product.productVariantId)
 			if (successful) {
 				showNotification()

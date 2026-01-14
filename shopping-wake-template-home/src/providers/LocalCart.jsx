@@ -19,8 +19,8 @@ export default function CartProvider({ children }) {
 		return executeCartOperation(getCart, cartId)
 	}
 
-	const addItem = async payload => {
-		return executeCartOperation(addItemToCart, payload)
+	const addItem = async (productVariantId, quantity) => {
+		return executeCartOperation(addItemToCart, productVariantId, quantity)
 	}
 
 	const removeItem = async itemId => {
