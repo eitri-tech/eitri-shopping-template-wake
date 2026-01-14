@@ -5,15 +5,17 @@ import { openProduct } from '../../services/NavigationService'
 import noImage from '../../assets/images/no_image.png'
 import { formatCurrency, formatImageUrl } from '../../utils/Util'
 import { getProductByVariations, getProductVariations } from '../../services/ProductService'
-import { addItemToCart } from '../../services/CartService'
 import FavoriteButton from '@/components/productCard/FavoriteButton'
 import plusIcon from '../../assets/images/plus.svg'
 import bagIcon from '../../assets/images/plus.svg'
 import addIcon from '../../assets/images/plus.svg'
 import closeIcon from '../../assets/images/close.svg'
+import { useLocalShoppingCart } from '../../providers/LocalCart'
 
 export default function SliderProductItem(props) {
 	const { product, width, saveFavorite, showProductInfo, showFavoriteIcon } = props
+
+	const { addItem } = useLocalShoppingCart()
 
 	// Função para obter percentual de desconto da API
 	const getDiscountPercentage = () => {
@@ -103,7 +105,7 @@ export default function SliderProductItem(props) {
 			})
 
 			const _product = await getProductByVariations(product.productId, _selectedVariations)
-			const cart = await addItemToCart(_product.productVariantId, 1)
+			const cart = await addItem(_product.productVariantId, 1)
 			const successful = cart.products.find(p => p.productVariantId === _product.productVariantId)
 			if (successful) {
 				showNotification('Produto adicionado à sacola!')
