@@ -9,7 +9,7 @@ import { Wake } from 'eitri-shopping-wake-shared'
 export const getCart = async cartId => {
 	try {
 		const cart = await Wake.cart.getCurrentOrCreateCart(cartId)
-		addMetadata(cart?.checkoutId)
+		addEitriMetadata(cart?.checkoutId)
 		return cart
 	} catch (error) {
 		console.error('Erro ao buscar carrinho', error)
@@ -24,7 +24,7 @@ export const getCart = async cartId => {
 export const getCheckout = async cartId => {
 	try {
 		const checkout = await Wake.cart.getCheckout(cartId)
-		addMetadata(checkout?.checkoutId)
+		addEitriMetadata(checkout?.checkoutId)
 		return checkout
 	} catch (error) {
 		console.error('Erro ao buscar carrinho completo', error)
@@ -128,14 +128,46 @@ export const forceCartId = async cartId => {
 	}
 }
 
-const addMetadata = async checkoutId => {
+/**
+ * Adiciona metadados de checkout
+ * @param {string} checkoutId
+ * @param {Array<key:string, value:string>} params
+ * @returns 
+ */
+export const addCheckoutMetadata = async (checkoutId, params) => {
+	if (!checkoutId) return
+
+	try {
+		const cart = await Wake.checkout.addCheckoutMetadata(checkoutId, params)
+		return cart.checkoutAddMetadata || null
+	} catch (e) {
+		console.error('Erro ao adicionar metadata', e)
+	}
+}
+
+/**
+ * Remove metadados de checkout
+ * @param {Array<string>} params 
+ * @returns 
+ */
+export const removeCheckoutMetadata = async (params) => {
+	try {
+		const cart = await Wake.checkout.checkoutRemoveMetadata(params)
+		return cart.checkoutRemoveMetadata || null
+	} catch (error) {
+		console.error('Erro ao gerar novo carrinho', error)
+		throw error
+	}
+}
+
+const addEitriMetadata = async checkoutId => {
 	if (!checkoutId) return
 
 	try {
 		const { applicationData } = await Eitri.getConfigs()
 		const platform = applicationData?.platform === 'ios' ? 'eitri_ios' : 'eitri_android'
 		const marketingTag = [{ key: 'platform', value: platform }]
-		await Wake.checkout.addCheckoutMetadata(checkoutId, marketingTag)
+		await addCheckoutMetadata(checkoutId, marketingTag)
 	} catch (e) {
 		console.error('Erro ao adicionar metadata', e)
 	}

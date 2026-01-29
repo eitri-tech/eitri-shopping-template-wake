@@ -1,6 +1,7 @@
 # App: 'EITRI-SHOP-TEMPLATE-WAKE'
 # DLK: 0647a5dd-5d7b-4ea1-888d-d86e05433f14
-application-id: 0647a5dd-5d7b-4ea1-888d-d86e05433f14
+# balaroti: 8f330ee9-2436-4b90-959b-e0f940a3a741
+application-id: 8f330ee9-2436-4b90-959b-e0f940a3a741
 bottom-tab-view-simulation:
     eitri-apps:
         - slug: 'home'
