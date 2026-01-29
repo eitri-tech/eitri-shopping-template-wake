@@ -1,4 +1,4 @@
-import { addCartItem, removeCartItem, getCheckout, getCart } from '../services/CartService'
+import { addCartItem, removeCartItem, getCheckout, getCart, addCheckoutMetadata, removeCheckoutMetadata, addCouponToCart, removeCouponFromCart } from '../services/CartService'
 
 const LocalCart = createContext({})
 
@@ -9,9 +9,14 @@ export default function CartProvider({ children }) {
 	const executeCartOperation = async (operation, ...args) => {
 		setCartIsLoading(true)
 		const newCart = await operation(...args)
-		setCart(newCart)
+		if (newCart) {
+			setCart(newCart)
+			setCartIsLoading(false)
+			return newCart
+		}
+
 		setCartIsLoading(false)
-		return newCart
+		return cart
 	}
 
 	const startCart = async cartId => {
@@ -27,6 +32,22 @@ export default function CartProvider({ children }) {
 		return executeCartOperation(removeCartItem, productVariantId, quantity)
 	}
 
+	const addCoupon = async (coupon) => {
+		return executeCartOperation(addCouponToCart, coupon)
+	}
+
+	const removeCoupon = async (coupon) => {
+		return executeCartOperation(removeCouponFromCart, coupon)
+	}
+
+	const addMetadata = async (metadata) => {
+		return executeCartOperation(addCheckoutMetadata, cart.checkoutId, metadata)
+	}
+	
+	const removeMetadata = async keys => {
+		return executeCartOperation(removeCheckoutMetadata, keys)
+	}
+
 	return (
 		<LocalCart.Provider
 			value={{
@@ -35,7 +56,11 @@ export default function CartProvider({ children }) {
 				cart,
 				cartIsLoading,
 				addItem,
-				removeItem
+				removeItem,
+				addCoupon,
+				removeCoupon,
+				addMetadata,
+				removeMetadata,
 			}}>
 			{children}
 		</LocalCart.Provider>

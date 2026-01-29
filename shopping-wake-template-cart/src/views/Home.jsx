@@ -15,6 +15,8 @@ import CartSummary from '../components/cartSummary/CartSummary'
 import Header from '../components/Header/Header'
 import EmptyCart from '../components/emptyCart/EmptyCart'
 import Freight from '../components/freight/Freight'
+import InputCoupon from '../components/inputCoupon/InputCoupon'
+import InputSellerCode from '../components/inputSellerCode/InputSellerCode'
 
 export default function Home() {
 	const PAGE = 'Sacola'
@@ -137,6 +139,10 @@ export default function Home() {
 
 					<Freight />
 
+					<InputCoupon />
+
+					<InputSellerCode />
+
 					{/* Resumo do carrinho */}
 					<CartSummary
 						items={cart?.products.map(i => ({
@@ -145,7 +151,7 @@ export default function Home() {
 						}))}
 						itemsValue={cart.subtotal}
 						shipping={cart.shippingFee}
-						discounts={cart.discount}
+						discount={cart.discount}
 						totalValue={cart.total}
 						couponDiscount={cart.couponDiscount}
 						appliedCoupon={cart.coupon}
