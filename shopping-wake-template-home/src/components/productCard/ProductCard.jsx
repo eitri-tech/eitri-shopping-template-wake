@@ -164,7 +164,7 @@ export default function ProductCard(props) {
 							key={`${images?.[0]?.url || `noImage_${product.productName}`}`}
 							loading='lazy'
 							className='w-full bg-neutral-100 object-cover bg-center'
-							src={formatImageUrl(images?.[0]?.url) || noImageUrl}
+							src={formatImageUrl(images?.[0]?.url) || noImage}
 						/>
 					</View>
 				) : (
@@ -272,7 +272,7 @@ export default function ProductCard(props) {
 											key={`${image.url || 'noImage_' + product.productName}_${index}`}
 											loading='lazy'
 											className='w-full bg-neutral-100 object-cover bg-center h-full'
-											src={formatImageUrl(image.url) || noImageUrl}
+											src={formatImageUrl(image.url) || noImage}
 										/>
 									</View>
 								))}
@@ -377,7 +377,7 @@ export default function ProductCard(props) {
 											key={`noImage_${product.productName}`}
 											loading='lazy'
 											className='w-full bg-neutral-100 object-cover bg-center h-full'
-											src={noImageUrl}
+											src={noImage}
 										/>
 									</View>
 								))}
