@@ -43,7 +43,7 @@ export default function SliderProductItem(props) {
 		}
 
 		// Tag "NEW" para produtos com ID alto (mais recentes)
-		if (product?.productId > 82000) {
+		if (product?.newRelease) {
 			tags.push({ label: 'NEW', className: 'bg-black text-white' })
 		}
 

@@ -185,6 +185,32 @@ export const consvertSize = size => {
 	}
 }
 
+export const getMarginBottomClass = size => {
+	const normalized = consvertSize(size || 'none')
+	const classes = {
+		'0': 'mb-0',
+		'1': 'mb-1',
+		'2': 'mb-2',
+		'3': 'mb-3',
+		'4': 'mb-4',
+		'5': 'mb-5'
+	}
+	return classes[normalized] || 'mb-0'
+}
+
+export const getMarginTopClass = size => {
+	const normalized = consvertSize(size || 'none')
+	const classes = {
+		'0': 'mt-0',
+		'1': 'mt-1',
+		'2': 'mt-2',
+		'3': 'mt-3',
+		'4': 'mt-4',
+		'5': 'mt-5'
+	}
+	return classes[normalized] || 'mt-0'
+}
+
 export const isVideo = url => {
 	const videoExtensions = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv', 'flv']
 	const baseurl = url.replace(/\?.*/, '')

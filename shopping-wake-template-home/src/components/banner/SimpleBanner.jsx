@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { View, Image, Text } from 'eitri-luminus'
 import { CustomCarousel } from 'shopping-wake-template-shared'
-import { calculeBestDimensions, consvertSize, computeBannerHeightVW, formatImageUrl } from '../../utils/Util'
+import { calculeBestDimensions, getMarginBottomClass, getMarginTopClass, computeBannerHeightVW, formatImageUrl } from '../../utils/Util'
 import { openHotsite, openHotsiteOrProduct, openProduct, openSearch } from '../../services/NavigationService'
 
 /*
@@ -94,8 +94,8 @@ export default function SimpleBanner(props) {
 		<View
 			key={`SimpleBanner${keyProduct}`}
 			className={`snap-start relative flex justify-center
-				mb-${consvertSize(params?.marginBottom || 'none')} 
-				mb-${consvertSize(params?.marginTop || 'none')}`}
+				${getMarginBottomClass(params?.marginBottom)} 
+				${getMarginTopClass(params?.marginTop)}`}
 			width={`${widthBanner}vw`}
 			height={`${heightBanner}vw`}>
 			{banners?.length > 1 ? (
