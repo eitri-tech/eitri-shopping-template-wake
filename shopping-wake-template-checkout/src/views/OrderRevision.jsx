@@ -18,13 +18,19 @@ import { useEffect, useState } from 'react'
 export default function OrderRevision(props) {
 	const PAGE = 'Checkout - Revisão do Pedido'
 
-	const { payOrder, customer, checkout } = useCheckout()
-	const [loadingPayment, setLoadingPayment] = useState(false)
+	const { startCheckout,payOrder, customer, checkout } = useCheckout()
+	const [loadingPayment, setLoadingPayment] = useState(true)
 	const [showError, setShowError] = useState(false)
 
 	useEffect(() => {
 		logScreenView(PAGE, 'OrderRevision')
+		init()
 	}, [])
+
+	const init = async () => {
+		await startCheckout()
+		setLoadingPayment(false)
+	}
 
 	const handlePay = async () => {
 		setLoadingPayment(true)

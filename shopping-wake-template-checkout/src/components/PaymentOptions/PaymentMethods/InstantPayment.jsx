@@ -18,9 +18,9 @@ export default function InstantPayment(props) {
 
 	return (
 		<PaymentMethodCard
-			title={'Pix'}
+			title={paymentOption?.name || 'Pix'}
 			alertMsg={'O código Pix será exibido na próxima etapa, após a revisão do seu pedido.'}
-			subtitle={'Pagamento instantâneo'}
+			subtitle={paymentOption?.description || 'Pagamento instantâneo'}
 			onClick={handlePress}
 		/>
 	)

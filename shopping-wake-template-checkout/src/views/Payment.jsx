@@ -46,8 +46,17 @@ export default function Payment(props) {
 	}, [customer])
 
 	const validateCheckout = () => {
-		if (!checkout?.selectedShipping) {
+
+		if (!checkout?.selectedShipping && !checkout?.selectedShippingGroups) {
 			Eitri.navigation.navigate({ path: 'Home' })
+		}
+		if (checkout?.selectedShippingGroups) {
+			const isValid = checkout.selectedShippingGroups?.every(group => {
+				return group?.selectedShipping?.id || group?.selectedShipping?.shippingQuoteId
+			})
+			if (!isValid) {
+				Eitri.navigation.navigate({ path: 'Home' })
+			}
 		}
 	}
 

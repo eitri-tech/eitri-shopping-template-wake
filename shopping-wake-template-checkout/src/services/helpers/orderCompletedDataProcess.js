@@ -52,18 +52,19 @@ export const orderCompletedDataProcess = orderData => {
 	}
 }
 
-function findPaymentMethod(name) {
-	switch (name) {
-		case 'Cartão':
-			return PAYMENT_METHODS.CREDIT_CARD
-		case 'PIX':
-		case 'PIX 5% OFF':
-			return PAYMENT_METHODS.INSTANT_PAYMENT
-		case 'Boleto':
-			return PAYMENT_METHODS.BILLING
-		default:
-			return ''
+const findPaymentMethod = name => {
+	const formatedName = name?.toLowerCase() || ''
+	if (formatedName.includes('cartão') || formatedName.includes('card') || formatedName.includes('cartao')) {
+		return PAYMENT_METHODS.CREDIT_CARD
+	} else if (formatedName.includes('pix')) {
+		return PAYMENT_METHODS.INSTANT_PAYMENT
+	} else if (formatedName.includes('boleto')) {
+		return PAYMENT_METHODS.BILLING
+	} else if (formatedName.includes('vale')) {
+		return PAYMENT_METHODS.CHECKING_ACCOUNT
 	}
+
+	return ''
 }
 
 function convertDate(isoString) {

@@ -12,13 +12,13 @@ import { delay } from '../utils/Util'
 import GenericModal from '../components/GenericModal/GenericModal'
 import { checkoutReset } from '../services/CheckoutServices'
 
+let isPristine = true
 export default function Home(props) {
 	const PAGE = 'Checkout'
 
 	const { checkout, startCheckout } = useCheckout()
 	const [isLoading, setIsLoading] = useState(false)
 	const [showModalError, setShowModalError] = useState(false)
-	const [isPristine, setIsPristine] = useState(true)
 
 	useEffect(() => {
 		init()
@@ -28,8 +28,9 @@ export default function Home(props) {
 	useEffect(() => {
 		if (checkout && isPristine) {
 			try {
+				isPristine = false
 				sendGaBeginCheckout(checkout)
-				setIsPristine(false)
+				console.info('checkout', checkout?.checkoutId)
 			} catch (e) {
 				console.error('Error sending ga begin checkout', e)
 			}

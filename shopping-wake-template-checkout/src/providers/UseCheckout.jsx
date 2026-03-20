@@ -24,6 +24,7 @@ import {
 import Eitri from 'eitri-bifrost'
 import { formatCurrency } from '../utils/Util'
 import { sendLogError } from '../services/TrackingService'
+import { orderCompletedDataProcess } from '../services/helpers/orderCompletedDataProcess'
 
 const Checkout = createContext({})
 
@@ -94,7 +95,8 @@ export default function CheckoutProvider({ children }) {
 
 	const getShippingQuotes = async () => {
 		if (!customer) return []
-		return await getShippingQuotesImpl(checkout)
+		const result = await getShippingQuotesImpl(checkout)
+		return result
 	}
 
 	const getPaymentOptions = async () => {
@@ -119,8 +121,8 @@ export default function CheckoutProvider({ children }) {
 		setOrder(_order)
 	}
 
-	const setDeliveryOption = async deliveryOptionId => {
-		const result = await setDeliveryOptionImpl(deliveryOptionId)
+	const setDeliveryOption = async deliveryOption => {
+		const result = await setDeliveryOptionImpl(deliveryOption)
 		// TODO: realizar passagem do token de usuário para receber completo - ajuste no Service tambem
 		setCheckout({ ...result.checkoutSelectShippingQuote, customer: checkout.customer })
 	}

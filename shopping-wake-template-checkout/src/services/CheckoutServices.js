@@ -99,6 +99,7 @@ export const getTotalizersImpl = orderData => {
 		totalizers.items.push({
 			image: product.imageUrl,
 			label: product.name,
+			productVariantId: product.productVariantId,
 			value: formatCurrency(product.quantity * product.price)
 		})
 	})
@@ -116,40 +117,80 @@ export const getTotalizersImpl = orderData => {
 }
 
 export const getShippingQuotesImpl = async checkout => {
+		
+	let groups
 	try {
-		const res = await Wake.checkout.shippingQuotes()
+		groups = await Wake.checkout.shippingQuoteGroups({
+			checkoutId: checkout?.checkoutId
+		})
+	} catch (e) {
+		console.log('getShippingQuotesImpl shippingQuoteGroups: ', e)
+	}
 
-		const hasPickUp = res?.shippingQuotes?.some(quote => quote.type === 'Retirada')
-
-		let physicalStores = []
-
+	let physicalStores = []
+	const hasPickUp = groups?.some(group => group.pickups)
+	try {
 		if (hasPickUp) {
 			const shop = await Wake.store.shop()
 			if (shop) {
 				physicalStores = shop.physicalStores
 			}
 		}
-		return res?.shippingQuotes?.map(quote => {
-			console.log(formatDeliveryMessage(quote.deadline, quote.deadlineInHours, quote.type === 'Retirada'))
-			return {
-				id: quote.shippingQuoteId,
-				name: quote.name,
-				deliveryMessage: formatDeliveryMessage(
-					quote.deadline,
-					quote.deadlineInHours,
-					quote.type === 'Retirada'
-				),
-				value: quote.value,
-				formatedValue: quote.value === 0 ? 'Grátis' : formatCurrency(quote.value),
-				isCurrent: checkout?.selectedShipping?.shippingQuoteId === quote.shippingQuoteId,
-				type: quote.type,
-				isPickup: quote.type === 'Retirada',
-				pickUpStore: physicalStores.find(ps => ps.name === quote.name)
-			}
-		})
 	} catch (e) {
-		console.log('getShippingQuotes Error: ', e)
+		console.log('getShippingQuotesImpl shop: ', e)
 	}
+
+	const formatedGroups = []
+
+	groups?.map(group => {
+		const delivery = []
+		const pickup = []
+		try {
+			group.shippingQuotes?.map(quote => {
+				delivery.push({
+					id: quote.shippingQuoteId,
+					name: quote.name,
+					deliveryMessage: formatDeliveryMessage( quote.deadline, quote.deadlineInHours, false ),
+					value: quote.value,
+					formatedValue: quote.value === 0 ? 'Grátis' : formatCurrency(quote.value),
+					isCurrent: checkout?.selectedShipping?.shippingQuoteId === quote.shippingQuoteId,
+					type: quote.type,
+					isPickup: false,
+					pickUpStore: '',
+					distributionCenterId: group.distributionCenter?.id
+				})
+			})
+		} catch (e) {
+			console.log('getShippingQuotesImpl group.shippingQuotes: ', e)
+		}
+
+		try {
+			group.pickups?.map(pickupItem => {
+				pickup.push({
+					id: pickupItem.shippingQuoteId,
+					name: pickupItem.name,
+					deliveryMessage: formatDeliveryMessage( pickupItem.deadline, pickupItem.deadlineInHours, true ),
+					value: pickupItem.value,
+					formatedValue: pickupItem.value === 0 ? 'Grátis' : formatCurrency(pickupItem.value),
+					isCurrent: checkout?.selectedShipping?.shippingQuoteId === pickupItem.shippingQuoteId,
+					type: pickupItem.type,
+					isPickup: true,
+					pickUpStore: physicalStores.find(ps => ps.name === pickupItem.name),
+					distributionCenterId: group.distributionCenter?.id
+				})
+			})
+		} catch (e) {
+			console.log('getShippingQuotesImpl group.pickups: ', e)
+		}
+
+		formatedGroups.push({
+			delivery,
+			pickup,
+			products: group.products,
+		})
+	})
+
+	return formatedGroups
 }
 
 const findPaymentMethod = name => {
@@ -173,15 +214,15 @@ const findPaymentMethod = name => {
 
 export const getPaymentOptionsImpl = async checkoutId => {
 	try {
-		// const res = await Wake.checkout.paymentMethods()
+		// const res = await Eitri.http.get(`https://pub-gateway.fbits.net/${checkoutId}`)
+		const res = await Wake.checkout.paymentMethods()
+		const resPayment = res?.data || res?.paymentMethods
 
-		const res = await Eitri.http.get(`https://pub-gateway.fbits.net/${checkoutId}`)
-
-		const payments = res?.data?.map(option => {
+		const payments = resPayment?.map(option => {
 			return {
-				name: option.Nome,
-				paymentMethod: findPaymentMethod(option.Nome),
-				paymentMethodId: option.Id,
+				name: option.Nome || option.name,
+				paymentMethod: findPaymentMethod(option.Nome || option.name),
+				paymentMethodId: option.Id || option.id,
 				paymentMethodData: {}
 			}
 		})
@@ -196,31 +237,62 @@ export const getPaymentOptionsImpl = async checkoutId => {
 export const setPaymentOptionImpl = async (option, checkoutId) => {
 	const optionId = option.paymentMethodId
 
-	const result = await Eitri.http.post(
-		`https://pub-gateway.fbits.net/api/pagamentos/loja/${optionId}/${checkoutId}`
-	)
-	return await Wake.cart.getCheckout()
-	// return await Wake.checkout.checkoutSelectPaymentMethod(optionId)
+	// const result = await Eitri.http.post(
+	// 	`https://pub-gateway.fbits.net/api/pagamentos/loja/${optionId}/${checkoutId}`
+	// )
+	// return await Wake.cart.getCheckout()
+	const result = await Wake.checkout.checkoutSelectPaymentMethod(optionId)
+	return result?.checkoutSelectPaymentMethod || null
 }
 
 export const getOrderRevisionImpl = async option => {
 	try {
 		const checkout = await Wake.cart.getCheckout()
 
-		let freight = null
+		let freight = []
 		let payment = null
 		let address = null
 
-		const selectedShipping = checkout?.selectedShipping
-		if (selectedShipping && selectedShipping?.shippingQuoteId) {
-			freight = {}
-			freight.title = selectedShipping.name
-			freight.subtitle = formatDeliveryMessage(
+		const hasPickup = checkout?.selectedShippingGroups?.some(group => group?.selectedShipping?.type === 'Retirada')
+		let shop
+		if (hasPickup) {
+			shop = await Wake.store.shop()
+		}
+
+		checkout?.selectedShippingGroups?.forEach((group, idx) => {
+			const selectedShipping = group?.selectedShipping
+
+			if (!selectedShipping) return
+
+			const freightInfo = {}
+			freightInfo.title = selectedShipping.name
+			freightInfo.subtitle = formatDeliveryMessage(
 				selectedShipping.deadline,
 				selectedShipping.deadlineInHours,
 				selectedShipping.type === 'Retirada'
 			)
-		}
+
+			if (selectedShipping.type === 'Retirada') {
+				selectedShipping.isPickup = true
+				
+				const shopAddress = shop?.physicalStores?.find(ps => ps.name === selectedShipping.name)
+				selectedShipping.address = {}
+				selectedShipping.address.title = selectedShipping.name
+				selectedShipping.address.subtitle = `${shopAddress?.address} - ${shopAddress?.neighborhood} - ${shopAddress?.city} - ${shopAddress?.state}`	
+			} else {
+				selectedShipping.isDelivery = true
+				
+				const selectedAddress = checkout?.selectedAddress
+				if (selectedAddress && selectedAddress?.id) {
+					selectedShipping.address = {}
+					selectedShipping.address.title = selectedAddress.receiverName
+					selectedShipping.address.subtitle = `${selectedAddress.street || ''}, ${selectedAddress.addressNumber || ''} - ${selectedAddress?.complement || ''} ${selectedAddress?.neighborhood || ''} ${selectedAddress?.neighborhood && '-'} ${selectedAddress?.city || ''} - ${selectedAddress?.state || ''} - CEP ${selectedAddress?.cep || ''}`
+				}
+				
+			}
+
+			freight.push({...freightInfo, ...selectedShipping})
+		})
 
 		const selectedPaymentMethod = checkout?.selectedPaymentMethod
 		if (selectedPaymentMethod && selectedPaymentMethod?.paymentMethodId) {
@@ -246,30 +318,9 @@ export const getOrderRevisionImpl = async option => {
 			}
 		}
 
-		const isPickup = selectedShipping.type === 'Retirada'
-
-		if (isPickup) {
-			const shop = await Wake.store.shop()
-			const shopAddress = shop?.physicalStores?.find(ps => ps.name === selectedShipping.name)
-			address = {}
-			address.title = selectedShipping.name
-			address.subtitle = `${shopAddress?.address} - ${shopAddress?.neighborhood} - ${shopAddress?.city} - ${shopAddress?.state}`
-		} else {
-			const selectedAddress = checkout?.selectedAddress
-			if (selectedAddress && selectedAddress?.id) {
-				address = {}
-				address.title = selectedAddress.receiverName
-				address.subtitle = `${selectedAddress.street || ''}, ${selectedAddress.addressNumber || ''} - ${
-					selectedAddress?.complement || ''
-				} ${selectedAddress?.neighborhood || ''} ${selectedAddress?.neighborhood && '-'}
-			${selectedAddress?.city || ''} - ${selectedAddress?.state || ''} - CEP ${selectedAddress?.cep || ''}`
-			}
-		}
-
 		return {
 			payment,
-			freight,
-			address
+			freight
 		}
 	} catch (e) {
 		console.error('Erro getOrderRevisionImpl', e)
@@ -358,8 +409,8 @@ function formatCurrency(value) {
 	return Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
 
-export const setDeliveryOptionImpl = async deliveryOptionId => {
-	return await Wake.checkout.checkoutSelectShippingQuote(deliveryOptionId)
+export const setDeliveryOptionImpl = async deliveryOption => {
+	return await Wake.checkout.checkoutSelectShippingQuote(deliveryOption.id, null, deliveryOption.distributionCenterId)
 }
 
 export const setDeliveryAddressImpl = async address => {
@@ -390,7 +441,7 @@ const getTokenByGetNet = async (creditCardData, paramsCreditCard) => {
 			}
 		}
 	)
-	console.log('getTokenByGetNet', JSON.stringify(result))
+	// console.log('getTokenByGetNet', JSON.stringify(result))
 	return result.data.number_token
 }
 

@@ -38,21 +38,31 @@ export default function OrderRevisionComponent(props) {
 						/>
 					)}
 
-					{orderRevision?.freight && (
+					{orderRevision?.freight?.map(freightOption => (
+						
 						<Card
-							title={orderRevision?.freight?.title}
-							subtitle={orderRevision?.freight?.subtitle}
+							title={`${freightOption.isPickup ? 'Retirada - ' : 'Entrega - '} ${freightOption?.title}`}
+							subtitle={freightOption?.subtitle}
 							onClick={_ => navigateTo('SelectFreight')}
-						/>
-					)}
-
-					{orderRevision?.address && (
-						<Card
-							title={orderRevision?.address?.title}
-							subtitle={orderRevision?.address?.subtitle}
-							onClick={_ => navigateTo('Home')}
-						/>
-					)}
+						>
+							{freightOption.isDelivery ?( 
+								<View className='flex flex-col'>
+									<Text className='text-xs text-gray-600'>
+										Destinatário: {freightOption.address.title}
+									</Text>
+									<Text className='text-xs text-gray-600'>
+										{freightOption.address.subtitle}
+									</Text>
+								</View>
+							) : (
+								<View className='flex flex-col'>
+									<Text className='text-xs text-gray-600'>
+										{freightOption.address.subtitle}
+									</Text>
+								</View>
+							)}
+						</Card>
+					))}
 				</>
 			)}
 		</View>

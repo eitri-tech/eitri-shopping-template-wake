@@ -1,55 +1,121 @@
-import { useCheckout } from '../../providers/UseCheckout'
 import Eitri from 'eitri-bifrost'
+import { CustomButton } from 'shopping-wake-template-shared'
+import { useCheckout } from '../../providers/UseCheckout'
 import BottomFixed from '../BottomFixed/BottomFixed'
 import ShippingMethodCard from '../ShippingMethodCard/ShippingMethodCard'
-import { CustomButton } from 'shopping-wake-template-shared'
 import PickUpMethodCard from '../PickUpMethodCard/PickUpMethodCard'
 import { sendLogError } from '../../services/TrackingService'
+import LineProduct from '../OrderSummary/LineProduct'
 
 export default function DeliveryMethodSelector(props) {
 	const { className, ...rest } = props
-	const { customer, getShippingQuotes, setDeliveryOption, checkout } = useCheckout()
+	const { customer, getShippingQuotes, setDeliveryOption, getTotalizers, checkout } = useCheckout()
 
 	const DELIVERY_TYPE = 'delivery_type'
 	const PICKUP_TYPE = 'pickup_type'
 
 	const [shippingMethods, setShippingMethods] = useState([])
-	const [selectedShippingMethod, setSelectedShippingMethod] = useState(null)
+	const [deliveryShippingMethods, setDeliveryShippingMethods] = useState([])
+	const [pickupShippingMethods, setPickupShippingMethods] = useState([])
+	const [selectedShippingMethod, setSelectedShippingMethod] = useState([])
 	const [loadingDeliveryOption, setLoadingDeliveryOption] = useState(false)
 	const [loadingQuotes, setLoadingQuotes] = useState(true)
-	const [shippingTypeFilter, setShippingTypeFilter] = useState(DELIVERY_TYPE)
+	const [selectedTabShipping, setSelectedTabShipping] = useState([])
 
 	useEffect(() => {
-		getShippingQuotes().then(_shippingMethods => {
-			const selectedMethod = _shippingMethods.find(method => method.isCurrent)
-			if (selectedMethod) {
-				setSelectedShippingMethod({ ...selectedMethod })
-				setShippingTypeFilter(selectedMethod.isPickup ? PICKUP_TYPE : DELIVERY_TYPE)
-			} else {
-				setShippingTypeFilter(_shippingMethods.some(m => !m.isPickup) ? DELIVERY_TYPE : PICKUP_TYPE)
-			}
-			setShippingMethods(_shippingMethods)
-			setLoadingQuotes(false)
-		})
+		init()
 	}, [customer])
+
+	const init = async () => {
+		let _shippingQuotes = []
+		try {
+			_shippingQuotes = await getShippingQuotes()
+			const shippingQuotes = _shippingQuotes.map(shipping => {
+				const shippingProducts = shipping.products || []
+			
+				const completeProducts = shippingProducts.map(product => {
+					const productInfo = checkout.products.find(item => `${item.productVariantId}` === `${product.productVariantId}`)
+					return productInfo
+				})
+	
+				return {
+					...shipping,
+					products: completeProducts
+				}
+			})
+			setShippingMethods(shippingQuotes)
+		} catch (e) {
+			console.log('getShippingQuotes: ', e)
+		}
+
+		let _selectedShippingMethod = _shippingQuotes.map(() => null)
+		let _setSelectedTabShipping = _shippingQuotes.map(() => DELIVERY_TYPE)
+		try {
+			if (checkout?.selectedShippingGroups?.length) {
+				_shippingQuotes.forEach((shipping, idx) => {
+	
+					if (!shipping) return
+	
+					const selectedDelivery = shipping?.delivery?.find(delivery =>
+						checkout.selectedShippingGroups.some(selected => {
+							return delivery.id === selected?.selectedShipping?.shippingQuoteId
+						})
+					)
+					if (selectedDelivery) {
+						_selectedShippingMethod[idx] = selectedDelivery
+						return
+					}
+	
+					const selectedPickup = shipping?.pickup?.find(pickup =>
+						checkout.selectedShippingGroups.some(selected => {
+							return  pickup.id === selected?.selectedShipping?.shippingQuoteId
+						})
+					)
+					if (selectedPickup) {
+						_selectedShippingMethod[idx] = selectedPickup
+						_setSelectedTabShipping[idx] = PICKUP_TYPE
+					}
+				})
+			}
+		} catch (e) {
+			console.log('selectedShippingMethod: ', e)
+		}
+		
+		setSelectedShippingMethod(_selectedShippingMethod)
+		setSelectedTabShipping(_setSelectedTabShipping)
+		setLoadingQuotes(false)
+	}
+
 
 	const handleShippingMethodSelection = async () => {
 		try {
 			setLoadingDeliveryOption(true)
-			await setDeliveryOption(selectedShippingMethod.id)
+			for (const method of selectedShippingMethod) {
+				await setDeliveryOption(method)
+			}
+			
 			Eitri.navigation.navigate({ path: 'Payment' })
-			setLoadingDeliveryOption(false)
+			
 		} catch (e) {
-			setLoadingDeliveryOption(false)
 			sendLogError(e, '[DeliveryMethodSelector]handleShippingMethodSelection', {
 				userEmail: customer?.email,
 				cartId: checkout?.checkoutId
 			})
 		}
+		setLoadingDeliveryOption(false)
 	}
 
-	const deliveryShippingMethods = shippingMethods.filter(method => !method.isPickup)
-	const pickupShippingMethods = shippingMethods.filter(method => method.isPickup)
+	const handleSelectedShippingMethod = (index, shippingMethod) => {
+		const _selectedShippingMethod = [...selectedShippingMethod]
+		_selectedShippingMethod[index] = shippingMethod
+		setSelectedShippingMethod(_selectedShippingMethod)
+	}
+
+	const handleSetSelectedTabShipping = (type, index) => {
+		const _selectedTabShipping = [...selectedTabShipping]
+		_selectedTabShipping[index] = type
+		setSelectedTabShipping(_selectedTabShipping)
+	}
 
 	return (
 		<View className={`flex flex-col gap-4 ${className || ''}`}>
@@ -66,8 +132,8 @@ export default function DeliveryMethodSelector(props) {
 						<Loading />
 					</View>
 				) : (
-					<>
-						{shippingMethods.length === 0 ? (
+					<View className={`flex flex-col gap-3`}>
+						{shippingMethods?.length === 0 ? (
 							<View className='border border-yellow-300 p-4'>
 								<Text className='mb-2 text-sm font-medium text-yellow-800 block'>
 									Nenhuma forma de envio encontrada
@@ -78,83 +144,97 @@ export default function DeliveryMethodSelector(props) {
 								</Text>
 							</View>
 						) : (
-							<View>
-								{deliveryShippingMethods.length > 0 && pickupShippingMethods.length > 0 && (
-									<View className='mb-4'>
-										<View className='flex justify-between w-full'>
-											<View
-												className='flex justify-center flex-1'
-												onClick={() => setShippingTypeFilter(DELIVERY_TYPE)}>
-												<Text
-													className={`text-sm ${shippingTypeFilter === DELIVERY_TYPE ? 'font-semibold' : ''}`}>
-													Receber
-												</Text>
-											</View>
-											<View
-												className='flex justify-center flex-1'
-												onClick={() => setShippingTypeFilter(PICKUP_TYPE)}>
-												<Text
-													className={`text-sm ${shippingTypeFilter === PICKUP_TYPE ? 'font-semibold' : ''}`}>
-													Retirar
-												</Text>
-											</View>
+							<>
+								{ shippingMethods.map( (method, idx) => (
+									<View key={`method_${idx}`}
+										className={`flex flex-col ${shippingMethods?.length > 1 ? 'rounded border-neutral-300' : ''}`}>
+										
+										{idx > 0 && <View className='h-[1px] bg-gray-300 w-full px-2' />}
+
+										<View className='flex flex-col w-full p-4 gap-2'>
+											{method.products?.map((product, idx) => (
+												 <LineProduct 
+													name={product.name}
+													imageUrl={product.imageUrl}
+												/>
+											))}
 										</View>
-										<View className={`relative h-[1px] w-full bg-neutral-300 mt-2`}>
-											<View
-												className={`absolute bottom-0 ${shippingTypeFilter === DELIVERY_TYPE ? 'left-0' : 'left-[50%]'} transition-all duration-300 bg-neutral-700 h-full w-[50%]`}
-											/>
+
+										<View className='p-2'>
+											{method.delivery?.length > 0 && method.pickup?.length > 0 && (
+												<View className=''>
+													<View className={`flex justify-between w-full`}>
+														<View
+															className={`flex justify-center p-2 flex-1 ${!selectedTabShipping?.[idx] || selectedTabShipping?.[idx] === DELIVERY_TYPE ? 'border-t border-l border-r' : ''}`}
+															onClick={() => handleSetSelectedTabShipping(DELIVERY_TYPE, idx)}>
+															<Text
+																className={`text-sm ${selectedTabShipping?.[idx] === DELIVERY_TYPE ? 'font-semibold' : ''}`}>
+																Receber
+															</Text>
+														</View>
+														<View
+															className={`flex justify-center p-2 flex-1 ${selectedTabShipping?.[idx] === PICKUP_TYPE ? 'border-t border-l border-r' : ''}`}
+															onClick={() => handleSetSelectedTabShipping(PICKUP_TYPE, idx)}>
+															<Text
+																className={`text-sm ${selectedTabShipping?.[idx] === PICKUP_TYPE ? 'font-semibold' : ''}`}>
+																Retirar
+															</Text>
+														</View>
+													</View>
+												</View>
+											)}
+
+											<View className='flex flex-col'>
+												{(!selectedTabShipping?.[idx] || selectedTabShipping?.[idx] === DELIVERY_TYPE) && (
+													<>
+														{method.delivery?.map(option => (
+															<ShippingMethodCard
+																key={option.id}
+																isSelectable
+																isSelected={selectedShippingMethod?.[idx]?.id === option.id}
+																onSelect={() =>
+																	handleSelectedShippingMethod(idx, option)
+																}
+																title={option.name}
+																subTitle={option.deliveryMessage}
+																description={option.formatedValue}
+															/>
+														))}
+													</>
+												)}
+
+												{selectedTabShipping?.[idx] === PICKUP_TYPE && (
+													<>
+														{method.pickup?.map(option => (
+															<PickUpMethodCard
+																key={option.id}
+																isSelectable
+																isSelected={selectedShippingMethod?.[idx]?.id === option.id}
+																onSelect={() =>
+																	handleSelectedShippingMethod(idx, option)
+																}
+																title={option.name}
+																subTitle={option.deliveryMessage}
+																description={option.formatedValue}
+																pickUpStore={option.pickUpStore}
+															/>
+														))}
+													</>
+												)}
+											</View>
 										</View>
 									</View>
-								)}
-
-								<View className='flex flex-col gap-3'>
-									{shippingTypeFilter === DELIVERY_TYPE && (
-										<>
-											{deliveryShippingMethods?.map(option => (
-												<ShippingMethodCard
-													key={option.id}
-													isSelectable
-													isSelected={selectedShippingMethod?.id === option.id}
-													onSelect={() =>
-														setSelectedShippingMethod({ ...option, selected: true })
-													}
-													title={option.name}
-													subTitle={option.deliveryMessage}
-													description={option.formatedValue}
-												/>
-											))}
-										</>
-									)}
-
-									{shippingTypeFilter === PICKUP_TYPE && (
-										<>
-											{pickupShippingMethods?.map(option => (
-												<PickUpMethodCard
-													key={option.id}
-													isSelectable
-													isSelected={selectedShippingMethod?.id === option.id}
-													onSelect={() =>
-														setSelectedShippingMethod({ ...option, selected: true })
-													}
-													title={option.name}
-													subTitle={option.deliveryMessage}
-													description={option.formatedValue}
-													pickUpStore={option.pickUpStore}
-												/>
-											))}
-										</>
-									)}
-								</View>
-							</View>
+								) )}
+							</>
 						)}
-					</>
+					</View>
 				)}
 			</View>
 
 			<BottomFixed>
 				<CustomButton
 					loading={loadingDeliveryOption}
-					disabled={!selectedShippingMethod}
+					disabled={!selectedShippingMethod || selectedShippingMethod?.some(i => !i)}
 					onClick={handleShippingMethodSelection}
 					label='Continuar'
 				/>
