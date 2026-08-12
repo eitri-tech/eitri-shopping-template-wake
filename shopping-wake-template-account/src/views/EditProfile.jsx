@@ -22,6 +22,7 @@ export default function EditProfile(props) {
 	const [errorMessages, setErrorMessages] = useState({})
 	const [requestError, setRequestError] = useState(false)
 	const [successMessage, setSuccessMessage] = useState(false)
+	const [deleteAccountUrl, setDeleteAccountUrl] = useState(null)
 
 	useEffect(() => {
 		window.scroll(0, 0)
@@ -63,6 +64,11 @@ export default function EditProfile(props) {
 		} finally {
 			setIsLoading(false)
 		}
+
+		const remoteConfigs = await Eitri.environment.getRemoteConfigs()
+		if (remoteConfigs?.appConfigs?.deleteAccountUrl) {
+			setDeleteAccountUrl(remoteConfigs.appConfigs.deleteAccountUrl)
+		}
 	}
 
 	const setField = (field, value) => {
@@ -103,7 +109,7 @@ export default function EditProfile(props) {
 
 	const handleRemoveAccount = async () => {
 		try {
-			openBrowser(PAGE, 'https://ddddddd.cloudfront.net/?app=app', true)
+			openBrowser(PAGE, deleteAccountUrl, true)
 		} catch (e) {
 			console.error('Error removing account:', e)
 		}
@@ -214,10 +220,11 @@ export default function EditProfile(props) {
 					Salvar
 				</Button>
 
-				{/* TO-DO: Add GA event */}
-				<View onClick={handleRemoveAccount}>
-					<Text className='font-medium underline'>Solicitar exclusão da conta</Text>
-				</View>
+				{deleteAccountUrl && 
+					<View onClick={handleRemoveAccount}>
+						<Text className='font-medium underline'>Solicitar exclusão da conta</Text>
+					</View>
+				}
 			</View>
 
 			<View bottomInset='auto' />
