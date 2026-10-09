@@ -24,6 +24,29 @@ bottom-tab-view-simulation:
           initialization-params:
               type: 'string'
               value: 'tabIndex=3'
+    layout:
+        layout:
+            theme: 'classic'
+            backgroundColor: '#FFFFFF'
+            selectedColor: '#373737'
+            unselectedColor: '#8B8D98'
+            badgeBackground: '#E5484D'
+            badgeTextColor: '#FFFFFF'
+            themeCustomizations:
+                classic:
+                    labels: 'shown'
+                    topBorder:
+                        thickness: 1
+                        color: '#DBDDE0'
+        eitriApps:
+            - title: 'Inicio'
+              icon: 'https://media-eitri-content.eitri.tech/default/icon_home_v1.png'
+            - title: 'Categorias'
+              icon: 'https://media-eitri-content.eitri.tech/default/icon_menu_v1.png'
+            - title: 'Carrinho'
+              icon: 'https://media-eitri-content.eitri.tech/default/icon_cart_v1.png'
+            - title: 'Perfil'
+              icon: 'https://media-eitri-content.eitri.tech/default/icon_user_v1.png'
 eitri-apps:
     - path: ./shopping-wake-template-shared
       workspace: shopping-wake-template-shared
