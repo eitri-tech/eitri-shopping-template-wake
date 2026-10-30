@@ -4,10 +4,10 @@ import { View, Loading } from 'eitri-luminus'
 import { getHotsiteData } from '../services/HotsiteService'
 import { openPageError, openProduct } from '../services/NavigationService'
 import { logScreenView, logEvent } from '../services/TrackingService'
-import { resolveFilterQueryString } from '../services/ProductService'
 import { detachUrl, getDefaultSort, slugify } from '../utils/Util'
 
 import { LIST_ORDERING, PRODUCT_SORT_TYPE, SORT_DIRECTION, VIEW_MODE } from '../utils/Constants'
+import { parseHotsiteQueryString } from '../utils/HotsiteUrl'
 import SearchResultsWrapper from '../components/product/SearchResultsWrapper'
 import SimpleBanner from '../components/banner/SimpleBanner'
 import ProductListHeader from '../components/Header/ProductListHeader'
@@ -23,20 +23,29 @@ import { BottomInset, HeaderContentWrapper, HeaderReturn, HeaderText } from 'sho
 const listOrdering = LIST_ORDERING
 export default function Hotsite(props) {
 	// variaveis com valor padrão
-	const params = props?.location?.state
+	// os banners mandam ordenação/quantidade em searchParams; links antigos mandam direto no state
+	const params = { ...(props?.location?.state?.searchParams || {}), ...(props?.location?.state || {}) }
 	const titleAux = `${params?.title?.trim() || 'Catálogo'}`
 	const hotsiteUrl = params?.url || ''
 	const defaultItemsPerPage = 24
-	const defaultSort = getDefaultSort(props?.location?.state, PRODUCT_SORT_TYPE.RELEASE_DATE, SORT_DIRECTION.DESC)
-	const queryString = hotsiteUrl.replace(/^.*?\?/, '') // add logica para url com filtros vindo do cadastro na wake
-	const moreFilters = resolveFilterQueryString(queryString)
+	const defaultSort = getDefaultSort(params, PRODUCT_SORT_TYPE.RELEASE_DATE, SORT_DIRECTION.DESC)
+	const urlParams = parseHotsiteQueryString(hotsiteUrl)
 	const initialParams = {
 		first: params.quantity ? parseInt(params.quantity) : defaultItemsPerPage,
-		sortKey: params.sort || defaultSort.sortType,
-		sortDirection: params.sortDirection || defaultSort.direction,
+		sortKey: urlParams.sortKey || params.sort || defaultSort.sortType,
+		// as queries do template exigem SortDirection não nulo
+		sortDirection: urlParams.sortKey
+			? urlParams.sortDirection || defaultSort.direction
+			: params.sortDirection || defaultSort.direction,
 		after: null,
-		filter: [...(params?.filter || []), ...(moreFilters || [])]
+		filter: [...(params?.filter || []), ...urlParams.filter],
+		minimumPrice: urlParams.minimumPrice,
+		maximumPrice: urlParams.maximumPrice
 	}
+	const initialPriceRange =
+		urlParams.minimumPrice !== null || urlParams.maximumPrice !== null
+			? { min: urlParams.minimumPrice, max: urlParams.maximumPrice }
+			: null
 
 	// loading
 	const [title, setTitle] = useState(titleAux)
@@ -56,7 +65,11 @@ export default function Hotsite(props) {
 	// variáveis de filtro
 	const [showFilterModal, setShowFilterModal] = useState(false)
 	const [filterOptions, setFilterOptions] = useState([])
-	const [selectedFilters, setSelectedFilters] = useState([])
+	const [priceLimits, setPriceLimits] = useState(null)
+	const [priceRange, setPriceRange] = useState(initialPriceRange)
+	const [selectedFilters, setSelectedFilters] = useState(
+		urlParams.filter.flatMap(f => f.values.map(value => `${f.field}/${value}`))
+	)
 
 	// variáveis de ordenação
 	const [showSortModal, setShowSortModal] = useState(false)
@@ -81,16 +94,6 @@ export default function Hotsite(props) {
 			resolveProducts(searchParams)
 		}
 	}
-
-	useEffect(() => {
-		if (isPristine) return
-
-		try {
-			applyFilter(selectedFilters)
-		} catch (e) {
-			console.error('useEffect selectedFilters', e)
-		}
-	}, [selectedFilters])
 
 	const resolveScrollActions = () => {
 		Eitri.eventBus.subscribe({
@@ -161,6 +164,14 @@ export default function Hotsite(props) {
 				setTotalProducts(products.totalCount)
 				setFilterOptions(aggregations?.filters || [])
 
+				// na abertura os limites são definidos mesmo com preço vindo da URL, senão o slider de preço fica sem faixa
+				if ((firstPage && isPristine) || (!searchParams.minimumPrice && !searchParams.maximumPrice)) {
+					setPriceLimits({
+						min: Math.floor(aggregations?.minimumPrice ?? 0),
+						max: Math.ceil(aggregations?.maximumPrice ?? 0)
+					})
+				}
+
 				if (products.nodes.length <= 0) {
 					setPageHasEnded(true)
 				} else {
@@ -201,8 +212,11 @@ export default function Hotsite(props) {
 	const cleanFilters = () => {
 		const _searchParams = { ...searchParams }
 		_searchParams.filter = []
+		_searchParams.minimumPrice = null
+		_searchParams.maximumPrice = null
 
 		setSelectedFilters([])
+		setPriceRange(null)
 		setShowFilterModal(false)
 		resolveProducts(_searchParams, true)
 	}
@@ -211,11 +225,13 @@ export default function Hotsite(props) {
 		Eitri.navigation.back()
 	}
 
-	const handlerSelectedFilters = async filters => {
+	const handlerSelectedFilters = async (filters, range) => {
 		setSelectedFilters(filters)
+		setPriceRange(range)
+		applyFilter(filters, range)
 	}
 
-	const applyFilter = async selectedFilters => {
+	const applyFilter = async (selectedFilters, range) => {
 		const _searchParams = { ...searchParams }
 
 		const newFilter = {}
@@ -228,6 +244,8 @@ export default function Hotsite(props) {
 			field: key,
 			values: value
 		}))
+		_searchParams.minimumPrice = range?.min ?? null
+		_searchParams.maximumPrice = range?.max ?? null
 		resolveProducts(_searchParams, true)
 	}
 
@@ -249,7 +267,7 @@ export default function Hotsite(props) {
 					<HeaderText text={title} />
 				</HeaderContentWrapper>
 
-				{(products?.length > 0 || selectedFilters?.length > 0) && (
+				{(products?.length > 0 || selectedFilters?.length > 0 || priceRange) && (
 					<View className='flex flex-row items-center w-screen gap-4 p-4'>
 						<View
 							className='flex flex-row p-1 border border-black py-2 px-4 rounded-[5px] flex-1'
@@ -296,13 +314,15 @@ export default function Hotsite(props) {
 					selectedFilters={selectedFilters}
 					setSelectedFilters={handlerSelectedFilters}
 					cleanFilters={cleanFilters}
+					priceLimits={priceLimits}
+					priceRange={priceRange}
 				/>
 
 				<SortModal
 					show={showSortModal}
 					onClose={() => setShowSortModal(false)}
-					currentSortType={searchParams?.sortKey || defaultSort.sortType}
-					currentSortDirection={searchParams?.sortDirection || defaultSort.direction}
+					currentSortType={searchParams?.sortKey || initialParams.sortKey}
+					currentSortDirection={searchParams?.sortDirection || initialParams.sortDirection}
 					onChange={applySort}
 				/>
 
