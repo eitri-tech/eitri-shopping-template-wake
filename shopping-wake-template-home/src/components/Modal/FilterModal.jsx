@@ -1,14 +1,17 @@
 import { Image, View } from 'eitri-luminus'
 import closeIcon from '../../assets/images/close.svg'
 import ItemFilter from './Components/ItemFilter'
+import PriceRange from './Components/PriceRange'
 
 export default function FilterModal(props) {
-	const { show, onClose, filterOptions, selectedFilters, setSelectedFilters, cleanFilters } = props
+	const { show, onClose, filterOptions, selectedFilters, setSelectedFilters, cleanFilters, priceLimits, priceRange } =
+		props
 
 	if (!show) return null
 
 	const [activeTabItem, setActiveTabItem] = useState(null)
 	const [localSelectedFilters, setLocalSelectedFilters] = useState(selectedFilters)
+	const [localPriceRange, setLocalPriceRange] = useState(priceRange)
 
 	const selectVariation = (field, value) => {
 		const variation = `${field}/${value.name}`
@@ -28,7 +31,7 @@ export default function FilterModal(props) {
 	}
 
 	const applyFilters = () => {
-		setSelectedFilters(localSelectedFilters)
+		setSelectedFilters(localSelectedFilters, localPriceRange)
 		onClose()
 	}
 
@@ -80,7 +83,15 @@ export default function FilterModal(props) {
 
 				<View className='flex flex-col overflow-y-auto w-full'>
 					<Text className='text-sm font-medium pb-4'>Filtros</Text>
-					<View className='flex flex-col gap-2 '>
+					<PriceRange
+						rangeMin={priceLimits?.min}
+						rangeMax={priceLimits?.max}
+						initialMin={localPriceRange?.min}
+						initialMax={localPriceRange?.max}
+						onChange={setLocalPriceRange}
+					/>
+
+					<View className='flex flex-col gap-2'>
 						{filterOptions?.map((item, index) => (
 							<ItemFilter
 								variation={item}

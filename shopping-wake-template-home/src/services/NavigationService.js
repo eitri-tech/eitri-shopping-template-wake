@@ -64,7 +64,8 @@ export const openHotsiteOrProduct = async (url, title, searchParams) => {
 				return
 			}
 		} else if (pageType?.kind === URI_TYPE.HOTSITE) {
-			const _url = detachUrl(url)
+			// a URL vai inteira: a query string carrega os filtros e a ordenação cadastrados no banner da Wake
+			const _url = url.trim()
 			// Eitri.nativeNavigation.open({
 			// 	slug: 'home',
 			// 	initParams: {

@@ -30,7 +30,7 @@ const contentInfo = `contents {
 const productInfo = `products (onlyMainVariant: true) {
   ${dataProducts}
 }`
-const productInfoWithParams = `products(first: $first, after: $after, sortDirection: $sortDirection, sortKey: $sortKey, onlyMainVariant: true, filters: $filter) {
+const productInfoWithParams = `products(first: $first, after: $after, sortDirection: $sortDirection, sortKey: $sortKey, onlyMainVariant: true, filters: $filter, minimumPrice: $minimumPrice, maximumPrice: $maximumPrice) {
   ${dataProducts}
 }`
 
@@ -53,10 +53,12 @@ export const aggregationInfo = `
     filters {
       field, origin, values { name quantity }
     }
+    minimumPrice
+    maximumPrice
   }
 `
 
-export const queryBasicContentByHotsiteId = `query ($hotsiteId: Long!, $partnerAccessToken: String, $first: Int, $after: String, $sortKey: ProductSortKeys!, $sortDirection: SortDirection!, $filter: [ProductFilterInput]) {
+export const queryBasicContentByHotsiteId = `query ($hotsiteId: Long!, $partnerAccessToken: String, $first: Int, $after: String, $sortKey: ProductSortKeys!, $sortDirection: SortDirection!, $filter: [ProductFilterInput], $minimumPrice: Decimal, $maximumPrice: Decimal) {
   hotsite(hotsiteId: $hotsiteId, partnerAccessToken: $partnerAccessToken) {
     ${hotsiteInfo}
     ${bannerInfo}
@@ -66,7 +68,7 @@ export const queryBasicContentByHotsiteId = `query ($hotsiteId: Long!, $partnerA
   }
 }`
 
-export const queryBasicContentByHotsiteUrl = `query ($url: String, $partnerAccessToken: String, $first: Int, $after: String, $sortKey: ProductSortKeys!, $sortDirection: SortDirection!, $filter: [ProductFilterInput]) {
+export const queryBasicContentByHotsiteUrl = `query ($url: String, $partnerAccessToken: String, $first: Int, $after: String, $sortKey: ProductSortKeys!, $sortDirection: SortDirection!, $filter: [ProductFilterInput], $minimumPrice: Decimal, $maximumPrice: Decimal) {
   hotsite(url: $url, partnerAccessToken: $partnerAccessToken) {
     ${hotsiteInfo}
     ${bannerInfo}
@@ -76,7 +78,7 @@ export const queryBasicContentByHotsiteUrl = `query ($url: String, $partnerAcces
   }
 }`
 
-export const queryAllContentHotsiteByUrl = `query ($url: String, $partnerAccessToken: String, $first: Int, $after: String, $sortKey: ProductSortKeys!, $sortDirection: SortDirection!, $filter: [ProductFilterInput]) {
+export const queryAllContentHotsiteByUrl = `query ($url: String, $partnerAccessToken: String, $first: Int, $after: String, $sortKey: ProductSortKeys!, $sortDirection: SortDirection!, $filter: [ProductFilterInput], $minimumPrice: Decimal, $maximumPrice: Decimal) {
   hotsite(url: $url, partnerAccessToken: $partnerAccessToken) {
     ${aggregationInfo}
     ${hotsiteInfo}
@@ -87,7 +89,7 @@ export const queryAllContentHotsiteByUrl = `query ($url: String, $partnerAccessT
   }
 }`
 
-export const queryBannersAndProductsByHotsite = `query ($url: String, $partnerAccessToken: String, $first: Int, $after: String, $sortKey: ProductSortKeys!, $sortDirection: SortDirection!) {
+export const queryBannersAndProductsByHotsite = `query ($url: String, $partnerAccessToken: String, $first: Int, $after: String, $sortKey: ProductSortKeys!, $sortDirection: SortDirection!, $filter: [ProductFilterInput], $minimumPrice: Decimal, $maximumPrice: Decimal) {
   hotsite(url: $url, partnerAccessToken: $partnerAccessToken) {
     ${aggregationInfo}
     ${bannerInfo}
@@ -95,7 +97,7 @@ export const queryBannersAndProductsByHotsite = `query ($url: String, $partnerAc
   }
 }`
 
-export const queryProductsByHotsite = `query ($url: String, $partnerAccessToken: String, $first: Int, $after: String, $sortKey: ProductSortKeys!, $sortDirection: SortDirection!, $filter: [ProductFilterInput]) {
+export const queryProductsByHotsite = `query ($url: String, $partnerAccessToken: String, $first: Int, $after: String, $sortKey: ProductSortKeys!, $sortDirection: SortDirection!, $filter: [ProductFilterInput], $minimumPrice: Decimal, $maximumPrice: Decimal) {
   hotsite(url: $url, partnerAccessToken: $partnerAccessToken) {
     ${aggregationInfo}
     ${productInfoWithParams}
