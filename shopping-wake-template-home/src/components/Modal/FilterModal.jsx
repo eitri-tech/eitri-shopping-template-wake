@@ -7,11 +7,19 @@ export default function FilterModal(props) {
 	const { show, onClose, filterOptions, selectedFilters, setSelectedFilters, cleanFilters, priceLimits, priceRange } =
 		props
 
-	if (!show) return null
-
 	const [activeTabItem, setActiveTabItem] = useState(null)
 	const [localSelectedFilters, setLocalSelectedFilters] = useState(selectedFilters)
 	const [localPriceRange, setLocalPriceRange] = useState(priceRange)
+
+	// o modal fica montado entre aberturas; sem isso, depois de "Limpar" ele reabre com a seleção antiga
+	useEffect(() => {
+		if (!show) return
+
+		setLocalSelectedFilters(selectedFilters)
+		setLocalPriceRange(priceRange)
+	}, [show])
+
+	if (!show) return null
 
 	const selectVariation = (field, value) => {
 		const variation = `${field}/${value.name}`
