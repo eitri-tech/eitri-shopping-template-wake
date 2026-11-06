@@ -84,29 +84,3 @@ const formatMenuGroups = async menuGroups => {
 const sortByOrder = (a, b) => {
 	return a.order > b.order ? 1 : a.order < b.order ? -1 : 0
 }
-
-export const resolveFilterQueryString = queryString => {
-	let filters = []
-	if (queryString) {
-		const queryStringValues = queryString.split('&')
-		if (queryStringValues.length > 0) {
-			for (const field of queryStringValues) {
-				const fieldSplit = field.split('=')
-				if (fieldSplit.length > 1) {
-					const fieldName = fieldSplit[0]
-					const fieldValue = fieldSplit[1]
-					if (fieldName === 'filtro') {
-						const filterValues = fieldValue.split('__')
-						if (filterValues.length > 1) {
-							filters.push({
-								field: filterValues[0],
-								values: [filterValues[1]]
-							})
-						}
-					}
-				}
-			}
-		}
-	}
-	return filters
-}
